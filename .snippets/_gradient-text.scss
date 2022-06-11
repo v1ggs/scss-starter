@@ -1,0 +1,7 @@
+// Webkit only, no IE, provide fallback
+@mixin gradient-text($direction: 180deg, $col-stops...) {
+   background: linear-gradient($direction, $col-stops);
+   background-clip: text;
+   -webkit-background-clip: text;
+   -webkit-text-fill-color: transparent;
+}

@@ -1,0 +1,332 @@
+/// @author vIGGS
+/// @link https://github.com/v1ggs/scss-starter
+
+/// =====================================================
+/// ===========  E A S I E R - S A S S - M Q  ===========
+/// =====================================================
+/// Sass-MQ full documentation and examples:
+/// @link https://github.com/sass-mq/sass-mq
+/// =====================================================
+
+/// USAGE:
+/// 01. Place this file in the same folder as _mq.scss
+/// - _mq.scss file is imported below, so no need to do it again
+/// 02. Create (wherever) a new file with these variables below (all or
+/// only those you want to override):
+/// - $emq-approach,
+/// - $emq-breakpoints,
+/// - $emq-orientation,
+/// - $emq-features,
+/// - $emq-media-type
+/// - $emq-show-breakpoints
+/// - $emq-show-breakpoints-position
+/// 03. Set $emq-breakpoints with as many breakpoints as you need
+/// 04. Set $emq-orientation and $emq-features as you need
+/// - Name keys (in breakpoints, orientation, features) the way it works for you
+/// 05. Import _emq.scss in this new file, AFTER variables
+/// 06. Use this new file in your project
+/// =====================================================
+/// To use breakpoints in a query, use keys from $emq-breakpoints map.
+/// @example - one breakpoint (medium) defined in $emq-breakpoints
+///    @include emq("m") { // code here };
+/// @example - one breakpoint (large) and orientation portrait
+///    @include emq("l", "op") { // code here };
+/// For features, use keys from $emq-features map. You can set height queries there, if required.
+/// @example - orientation portrait
+///    @include emq("op") { // code here };
+/// @example - touch-screen defined in $emq-features
+///    @include emq("touch") { // code here };
+/// For custom features, place them in quotes. It'a always a good idea to define them in $emq-features.
+/// @example - one breakpoint (large) with custom conditions
+///    @include emq(l, "(hover: hover) and (pointer: fine)") { // code here };
+/// For explicit min or max width, prefix defined size (key) with "min-" or "max-".
+/// @example - one breakpoint - force "max-width", size large
+///    @include emq("max-l") { // code here };
+/// If you set only one breakpoint, it will be min- or max-width,
+/// depending on $emq-approach setting.
+/// If you set two breakpoints, the first will be min-width,
+/// the second max-width regardless of $emq-approach setting.
+/// Other than that, queries order is not important, place them anywhere.
+/// @example - two breakpoints, from: extra-small (xs), until: large (l),
+///            touch-screen (touch) and orientation landscape (ol)
+///    @include emq("xs", "l", "ol", "touch") {...} or
+///    @include emq("touch", "xs", "ol", "l") {...} or
+///    @include emq("xs", "touch", "l", "ol") {...} etc.
+/// =====================================================
+/// Note: if you set the upper limit i.e. (max-width: $breakpoint)
+/// it is automatically made exclusive by sass-mq:
+/// (max-width: 36rem) will be (max-width: 35.99rem), so no need to
+/// care about it, just use predefined $emq-breakpoints.
+/// =====================================================
+
+/// Required sass modules
+@use "sass:string";
+@use "sass:list";
+@use "sass:map";
+
+/// modifies the behaviour of breakpoints
+/// options: { "mobile-first" | "desktop-first" }
+/// "mobile-first": If you set only one breakpoint, it is always "min-width"
+/// "desktop-first": If you set only one breakpoint, it is always "max-width"
+$emq-approach: "mobile-first" !default;
+
+/// breakpoints (add/remove/rename/reorder keys/values as required)
+/// exclusive when "max-width", no worry
+/// @link https://github.com/sass-mq/sass-mq#responsive-mode
+$emq-breakpoints: (
+   xxl: 1920px,
+   xl: 1600px,
+   l: 1280px,
+   m: 992px,
+   s: 768px,
+   xs: 576px,
+   xxs: 360px,
+) !default;
+
+/// features shortcuts
+/// @example
+///   emq(xxl, ol);
+///   // (max-width: <xxl breakpoint value>) and (orientation: landscape)
+/// @example
+///   emq(xl, touch);
+///   // (min-width: <xl breakpoint value>) and (pointer: coarse)
+$emq-features: (
+   op: "(orientation: portrait)",
+   ol: "(orientation: landscape)",
+   rm-no-pref: "(prefers-reduced-motion: no-preference)",
+   dark-scheme: "(prefers-color-scheme: dark)",
+   touch: "(pointer: coarse)", // (hover: none) is unreliable
+   hi-res: "(-webkit-min-device-pixel-ratio: 1.5), (min-resolution: 144dpi)",
+   retina: "(-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi)",
+   min-h-768: "(min-height: 768px)", // query height example
+) !default;
+
+/// Set the @media type { screen | print | all } (default "all")
+/// @link https://github.com/sass-mq/sass-mq#changing-media-type
+$emq-media-type: all !default;
+
+/// If you want to display the currently active breakpoint during
+/// development, add the breakpoints to this list, ordered by width.
+/// @example
+///    $emq-show-breakpoints: (s, m, l, xl);
+$emq-show-breakpoints: (xxl, xl, l, m, s, xs, xxs) !default;
+
+/// where to display currently active breakpoint (top, right, bottom, left)
+/// both properties required
+$emq-show-breakpoints-position: bottom left !default;
+
+/// ========================= DO NOT EDIT BELOW THIS LINE
+/// =====================================================
+/// import sass-mq
+
+@use "mq" as * with (
+   // Turn off the original "show breakpoints":
+   // Sass-mq shows active breakpoint only the mobile-first way,
+   // and in the top-right corner.
+   // Use the mixin below (emq-show-breakpoints) to show them the
+   // desktop-first way as well (depending on your config), and to
+   // have the option to configure the place where they appear.
+   $show-breakpoints: (),
+   $breakpoints: $emq-breakpoints,
+   $media-type: $emq-media-type,
+);
+
+/// =====================================================
+/// Helper function for emq mixin
+/// @author vIGGS
+/// @requires {Map} $emq-features - map with predefined custom queries
+/// @requires {String} $emq-approach - variable for design approach (mobile/desktop first)
+/// @param {String | List} $args - list of queries
+/// @return {Map} - map with values to use with sass-mq
+@function emq-get($args...) {
+   // use variables from the config
+   $features: $emq-features;
+
+   // store breakpoints
+   $bp-1: false;
+   $bp-2: false;
+
+   // store custom queries
+   $custom-list: false;
+
+   // store $from and $until for sass-mq, based on design approach
+   $mq-from: false;
+   $mq-until: false;
+
+   $current-query: false;
+   $current-query-short: false;
+   $current-query-short-in-bp-map: false;
+   $is-forced-min-bp: false;
+   $is-forced-max-bp: false;
+   $args-length: list.length($args);
+
+   @if $args-length > 0 {
+      @for $i from 1 through $args-length {
+         $current-query: list.nth($args, $i);
+         $is-forced-min-bp: string.index($current-query, "min-");
+         $is-forced-max-bp: string.index($current-query, "max-");
+         @if $is-forced-min-bp or $is-forced-max-bp {
+            // prevent assigning some custom queries that start
+            // with "min-" or "max-" using map.has-key()
+            $current-query-short: string.slice($current-query, 5, -1);
+            $current-query-short-in-bp-map: map.has-key($emq-breakpoints, $current-query-short);
+         }
+
+         @if $is-forced-min-bp and $current-query-short-in-bp-map {
+            $bp-1: $current-query-short;
+         } @else if $is-forced-max-bp and $current-query-short-in-bp-map {
+            $bp-2: $current-query-short;
+         } @else if map.has-key($emq-breakpoints, $current-query) {
+            @if not $bp-1 {
+               $bp-1: $current-query;
+            } @else {
+               $bp-2: $current-query;
+            }
+         } @else if map.has-key($features, $current-query) {
+            @if not $custom-list {
+               $custom-list: string.unquote(map.get($features, $current-query));
+            } @else {
+               $custom-list: list.append($custom-list, and, $separator: "space");
+               $custom-list: list.append(
+                  $custom-list,
+                  string.unquote(map.get($features, $current-query)),
+                  $separator: "space"
+               );
+            }
+         } @else {
+            // if not found in any map, assume it's a custom query
+            @if not $custom-list {
+               $custom-list: string.unquote($current-query);
+            } @else {
+               $custom-list: list.append($custom-list, and, $separator: "space");
+               $custom-list: list.append(
+                  $custom-list,
+                  string.unquote($current-query),
+                  $separator: "space"
+               );
+            }
+         }
+      }
+   }
+
+   // if using implicit min- or max- queries
+   // assign thme accordingly
+   @if $bp-2 and $is-forced-max-bp and $current-query-short-in-bp-map {
+      $mq-until: $current-query-short;
+   } @else if $bp-1 and $is-forced-min-bp and $current-query-short-in-bp-map {
+      $mq-from: $current-query-short;
+   } @else if $emq-approach == "desktop-first" {
+      // if desktop-first
+      @if $bp-1 and not $bp-2 {
+         // if only one breakpoint
+         $mq-from: false;
+
+         // use it as max-width
+         $mq-until: $bp-1;
+      } @else if $bp-1 and $bp-2 {
+         // if both breakpoints
+         $mq-from: $bp-1;
+         $mq-until: $bp-2;
+      }
+   } @else if $emq-approach == "mobile-first" {
+      // if mobile-first
+      @if $bp-1 and not $bp-2 {
+         // if only one breakpoint
+         // use it as min-width
+         $mq-from: $bp-1;
+         $mq-until: false;
+      } @else if $bp-1 and $bp-2 {
+         // if both breakpoints
+         $mq-from: $bp-1;
+         $mq-until: $bp-2;
+      }
+   }
+
+   $map: (
+      from: $mq-from,
+      until: $mq-until,
+      and: $custom-list,
+   );
+
+   @return $map;
+}
+
+/// =====================================================
+/// Easier-Sass-MQ
+/// @author vIGGS
+/// @requires {Function} emq-get - get the right values for sass-mq
+/// @param {String | List} $args - list of queries
+@mixin emq($args...) {
+   // get values in a map
+   $map: emq-get($args...);
+   $from: map.get($map, from);
+   $until: map.get($map, until);
+   $and: map.get($map, and);
+
+   @include mq(
+      $from: $from,
+      $until: $until,
+      $and: $and,
+   ) {
+      // A comment to understand the media query in CSS
+      @if $from and $until {
+         $get-from: map.get($emq-breakpoints, $from);
+         $get-until: map.get($emq-breakpoints, $until);
+         /* breakpoints: from #{$get-from} (#{$from}) until #{$get-until} (#{$until}) */
+      } @else if $from {
+         $get-from: map.get($emq-breakpoints, $from);
+         /* breakpoint: from #{$get-from} (#{$from}) */
+      } @else if $until {
+         $get-until: map.get($emq-breakpoints, $until);
+         /* breakpoint: until #{$get-until} (#{$until}) */
+      }
+
+      @content;
+   }
+}
+
+/// Easier-Sass-MQ show active breakpoint
+/// @author vIGGS
+// Sass-mq shows active breakpoint only the mobile-first way,
+// and in the top-right corner.
+// Use this mixin below (emq-show-breakpoints) to show them the
+// desktop-first way as well (depending on your config), and to
+// have the option to configure the place where they appear.
+@mixin emq-show-breakpoints {
+   @if list.length($emq-show-breakpoints) and
+      $emq-show-breakpoints-position {
+      $property-1: list.nth($emq-show-breakpoints-position, 1);
+      $property-2: list.nth($emq-show-breakpoints-position, 2);
+
+      @if $property-1 and $property-2 {
+         body::before {
+            /* emq #{$emq-approach} */
+            position: fixed;
+            #{$property-1}: 0;
+            #{$property-2}: 0;
+            border: 1px solid #fbeed5;
+            padding: 3px 6px;
+            background-color: #fcf8e3;
+            color: #c09853;
+            font: small-caption;
+            pointer-events: none;
+            z-index: 10000;
+
+            $operator: "<";
+
+            @if $emq-approach == "mobile-first" {
+               $operator: "≥";
+            }
+
+            // Loop through the breakpoints that should be shown
+            @each $key, $breakpoint in $emq-show-breakpoints {
+               $width: map.get($emq-breakpoints, $key);
+               @include emq(#{$key}) {
+                  // sass-mq function: px2em
+                  content: "#{$key} #{$operator} #{$width} (#{px2em($width)})";
+               }
+            }
+         }
+      }
+   }
+}

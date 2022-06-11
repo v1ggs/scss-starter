@@ -1,0 +1,23 @@
+/// Required sass modules
+@use "sass:math";
+
+/// Round a number at specified decimal places
+/// @author vIGGS
+/// @requires {Module} math - built-in sass module
+/// @param {Float} $number - Number to round
+/// @param {Integer} $decimals - Number of decimal places
+/// @return {Float | Integer} - Rounded number
+/// @example scss - Usage:
+/// .example { margin: round-number(5.65465465, 3); } // 5.655
+/// .example { margin: round-number(5.65465465, 1); } // 5.7
+/// .example { margin: round-number(5.65465465); }    // 6
+///
+@function round-number($number, $decimals: false) {
+   $pow: math.pow(10, $decimals);
+
+   @if not $decimals {
+      @return math.round($number);
+   } @else {
+      @return math.div(math.round($number * $pow), $pow);
+   }
+}

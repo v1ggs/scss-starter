@@ -1,0 +1,20 @@
+@mixin center(
+   $center: "both",
+   $position: absolute
+) {
+   position: $position;
+
+   @if $center == "vertical" {
+      top: 50%;
+      transform: translateY(-50%);
+   } @else if $center == "horizontal" {
+      left: 50%;
+      transform: translate(-50%);
+   } @else if $center == "both" {
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+   } @else {
+      @error "center Mixin: Unsupported centering method !!!";
+   }
+}

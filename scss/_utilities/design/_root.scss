@@ -1,0 +1,67 @@
+/// Required sass modules
+@use "sass:math";
+@use "sass:map";
+
+// HTML tag
+// Override these variables with the main config
+// Add/remove properties as neccessary
+
+// SETTINGS - override with config
+// html tag
+$smooth-scroll: true !default;
+$base-font-size: 16px !default;
+$html-overflow-x: hidden !default;
+$html-overflow-y: auto !default;
+$reduced-motion-query: rm-no-pref !default;
+
+// custom properties (css variables)
+// list all css variables here, WITHOUT leading "--"
+$custom-properties: (
+   name: value,
+) !default;
+
+// ====================================================
+
+// The :root CSS pseudo-class matches the root element of a tree
+// representing the document.
+// It represents the <html> element and is identical to the selector html,
+// except that its specificity is higher.
+// It can be useful for declaring global CSS variables.
+@mixin root {
+   box-sizing: border-box;
+   display: block;
+   margin: 0;
+   padding: 0;
+   border: 0;
+   min-height: 100vh;
+
+   font-size: math.div($base-font-size, 16px) * 100%;
+
+   @if $html-overflow-x and $html-overflow-x != auto {
+      overflow-x: $html-overflow-x;
+   }
+
+   @if $html-overflow-y and $html-overflow-y != auto {
+      overflow-y: $html-overflow-y;
+   }
+
+   @if $smooth-scroll {
+      @if map.has-key($emq-features, $reduced-motion-query) {
+         @include emq($reduced-motion-query) {
+            scroll-behavior: smooth;
+         }
+      } @else {
+         @error "root: No '#{$reduced-motion-query}' media-query defined in $emq-features...";
+      }
+   }
+
+   @if $custom-properties and
+      is-map($custom-properties) {
+      @each $name, $value in $custom-properties {
+         @if not ($name == "name" or $value == "value") {
+            // stylelint-disable-next-line custom-property-pattern
+            --#{$name}: #{$value};
+         }
+      }
+   }
+}

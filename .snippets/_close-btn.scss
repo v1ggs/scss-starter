@@ -1,0 +1,30 @@
+@mixin close-btn(
+   $button-size: 1em,
+   $position: relative,
+   $x-sign-thickness: 1px,
+   $x-sign-size: 66%,
+   $x-sign-color: black
+) {
+   position: $position;
+   width: $button-size;
+   height: $button-size;
+
+   &::before,
+   &::after {
+      position: absolute;
+      content: "";
+      top: 50%;
+      left: 50%;
+      width: $x-sign-thicknessness;
+      height: $x-sign-size;
+      background-color: $x-sign-coloror;
+   }
+
+   &::before {
+      transform: translate(-50%, -50%) rotate(45deg);
+   }
+
+   &::after {
+      transform: translate(-50%, -50%) rotate(-45deg);
+   }
+}

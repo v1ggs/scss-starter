@@ -1,0 +1,21 @@
+/*! Created using sass-starter */
+@charset "UTF-8";
+
+/// THEME COLORS
+$color-primary-base: red !default; // don't use in code
+$color-secondary-base: blue !default; // don't use in code
+$color-accent-base: yellow !default; // don't use in code
+
+// ====================================================
+// ============================================= CONFIG
+@import "_utilities/load-config";
+
+// ====================================================
+// =============================================== BASE
+
+@import "special-page/body";
+
+// ====================================================
+// ========================================= COMPONENTS
+
+@import "main/components/link";

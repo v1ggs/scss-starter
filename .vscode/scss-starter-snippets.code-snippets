@@ -1,0 +1,72 @@
+{
+	// Place your scss-starter-snippets workspace snippets here. Each snippet is defined under a snippet name and has a scope, prefix, body and
+	// description. Add comma separated ids of the languages where the snippet is applicable in the scope field. If scope
+	// is left empty or omitted, the snippet gets applied to all languages. The prefix is what is
+	// used to trigger the snippet and the body will be expanded and inserted. Possible variables are:
+	// $1, $2 for tab stops, $0 for the final cursor position, and ${1:label}, ${2:another} for placeholders.
+	// Placeholders with the same ids are connected.
+	// Example:
+	// "Print to console": {
+	// 	"scope": "javascript,typescript",
+	// 	"prefix": "log",
+	// 	"body": [
+	// 		"console.log('$1');",
+	// 		"$2"
+	// 	],
+	// 	"description": "Log output to console"
+	// }
+	"Font Family": {
+		"scope": "scss",
+		"prefix": "ff, font-family, system-ui-font, small-screen-font, include, mixin, scss-starter",
+		"body": "@include ff(\\$font-family-${1:primary});$0",
+		"description": "Use system ui font on small screens, if enabled in config, otherwise use the specified font family."
+	},
+	"Modular Scale": {
+		"scope": "scss",
+		"prefix": "ms, modular-scale, include, mixin, scss-starter",
+		"body": "@include ms(${1:css-property}, ${2:shorthand values});$0",
+		"description": "Use modular scale compatible size. Define CSS property as first argument, and list after comma required values, the standard CSS shorthand syntax (no commas). For values use keys from $modular-scale map. If you use different ratio for smaller screens (recommended), it will produce media-queries, respecting your design approach (mobile/desktop first)."
+	},
+	"Grid Scale": {
+		"scope": "scss",
+		"prefix": "gs, grid-scale, baseline-grid, include, mixin, scss-starter",
+		"body": "@include gs(${1:css-property}, ${2:shorthand values});$0",
+		"description": "Use baseline grid compatible size. Define CSS property as first argument, and list after comma required values, the standard CSS shorthand syntax (no commas). For values use keys from $baseline-grid-scale map."
+	},
+	"Fluid Size": {
+		"scope": "scss",
+		"prefix": "fs, fluid-size, include, mixin, scss-starter",
+		"body": "@include fs(\n${1:css-property},\n${2:max-size},\n${3:min-size},\n${4:max-breakpoint},\n${5:min-breakpoint}\n);$0",
+		"description": "Make any property fluid size. 1) Define CSS property, 2) set its maximum size, 3) its minimum size, 4) top breakpoint, above which the property will not grow anymore, and 5) the bottom breakpoint, below which the property will not shrink anymore. Use keys from breakpoints map or values in pixels, rems or unitless."
+	},
+	"Easier Sass-MQ": {
+		"scope": "scss",
+		"prefix": "emq, mq, media-query, include, mixin, scss-starter",
+		"body": "@include emq(${1:query-1...});$0",
+		"description": "Media-query: use (quoted/unquoted) any key(s) from $emq-breakpoints and $emq-features maps, a comma-separated list (e.g. emq(xxs, l, op); ). You can also use custom, quoted queries, but it's a better idea to define them in $emq-features map, and then use them by their key."
+	},
+	"No-JS Style": {
+		"scope": "scss",
+		"prefix": "no-js, js, include, mixin, scss-starter",
+		"body": "@include no-js-style {\n\t$1\n};$0",
+		"description": "Apply styles when the JavaScript is disabled."
+	},
+	"Link": {
+		"scope": "scss",
+		"prefix": "a, link, include, mixin, scss-starter",
+		"body": "@include a;$0",
+		"description": "Apply styles when the JavaScript is disabled."
+	},
+	"Image": {
+		"scope": "scss",
+		"prefix": "img, image, include, mixin, scss-starter",
+		"body": "@include img(\\$fluid: ${1:true}, \\$balance: ${2:true});$0",
+		"description": "Use on images, to balance them and \"style\" when they fail to load."
+	},
+	"Image Overlay": {
+		"scope": "scss",
+		"prefix": "img, overlay, include, mixin, scss-starter",
+		"body": "@include img-overlay(${1:pseudo-element});$0",
+		"description": "Create an image overlay. Use in the image's parent element. Prints <main-class>--img-overlay::before and its hover."
+	},
+}

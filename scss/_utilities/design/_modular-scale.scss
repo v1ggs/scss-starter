@@ -1,0 +1,174 @@
+/// @author vIGGS
+/// @link https://github.com/v1ggs/scss-starter
+
+/// Required sass modules
+@use "sass:math";
+@use "sass:map";
+@use "sass:list";
+
+/// Ratios from https://www.modularscale.com/
+/// Use the number in parentheses for $modular-scale-ratio variable.
+/// 15:16    (1.067)  - minor second
+///  8:9     (1.125)  - major second
+///  5:6     (1.2)    - minor third
+///  4:5     (1.25)   - major third
+///  3:4     (1.333)  - perfect fourth
+///  1:√2    (1.414)  - aug. fourth / dim. fifth
+///  2:3     (1.5)    - perfect fifth
+///  5:8     (1.6)    - minor sixth
+///  1:1.618 (1.618)  - golden section
+///  3:5     (1.667)  - major sixth
+///  9:16    (1.778)  - minor seventh
+///  8:15    (1.875)  - major seventh
+///  1:2     (2)      - octave
+///  2:5     (2.5)    - major tenth
+///  3:8     (2.667)  - major eleventh
+///  1:3     (3)      - major twelfth
+///  1:4     (4)      - double octave
+
+/// this size is the base for the modular scale
+$modular-scale-base-font-size: 16px !default;
+
+/// this is a breakpoint where you start using
+/// another "modular scale ratio"
+/// USE A KEY FROM YOUR BREAKPOINTS MAP
+$modular-scale-critical-breakpoint: "m" !default;
+
+/// If using both ratios, this will produce media queries everywhere
+/// you use "ms" mixin.
+/// If you don't want that, you can set the "desktop ratio" smaller
+/// (better for mobile) and disable the "mobile ratio".
+/// @type Float | boolean - set false to disable
+$modular-scale-ratio-desktop: 1.3333 !default; // 3:4 / 1.333 / perfect fourth
+$modular-scale-ratio-mobile: 1.25 !default; // 4:5 / 1.25 / major third
+
+$modular-scale: (
+   xxxxl: 5,
+   xxxl: 4,
+   xxl: 3,
+   xl: 2,
+   l: 1,
+   m: 0, // default == $size
+   s: -1,
+   xs: -2,
+   xxs: -3,
+   xxxs: -4,
+   xxxxs: -5,
+);
+
+/// Helper function: Get size based on a defined ratio
+/// @param {Integer} $scale - number to multiply/divide with the base
+/// @require {Integer} $size - base size in px for calculations
+/// @return {Number} - value in rems
+@function ms-scale($ratio, $scale) {
+   $base-size: $modular-scale-base-font-size;
+
+   // final value to return
+   $size: $modular-scale-base-font-size;
+
+   // make absolute for calculations, because $scale can be negative
+   $scale-abs: math.abs($scale);
+
+   // increase/decrease input value by
+   $scale-by: math.pow($ratio, $scale-abs);
+
+   @if $scale > 0 {
+      // round because it's in px
+      $size: math.round($base-size * $scale-by);
+   }
+
+   @if $scale < 0 {
+      // round because it's in px
+      $size: math.round(math.div($base-size, $scale-by));
+   }
+
+   @return to-rem($size);
+}
+
+///  *******************************************
+/// Created two different functions because
+/// if using them in code, it's easier to type
+/// msd(<size>); then ms(<ratio>, <size>); where
+/// <ratio> should be a (long) variable
+///  *******************************************
+
+/// Helper function: get a size from "$modular-scale" for "desktop" ratio
+/// @param {String | List} $sizes - key(s) from the $modular-scale map
+/// @require {Module} map - built-in sass module
+/// @require {Module} list - built-in sass module
+/// @require {Function} ms-scale - custom: get size based on a ratio
+/// @require {Map} $modular-scale
+/// @return {Number | List} - value(s) in rems
+@function msd($sizes) {
+   $values: ();
+
+   @each $size in $sizes {
+      @if map.has-key($modular-scale, $size) {
+         $scale: map.get($modular-scale, $size);
+         $value: ms-scale($modular-scale-ratio-desktop, $scale);
+         $values: list.append($values, $value);
+      } @else {
+         @error "msd() function: Map $modular-scale does not have the key #{$size} !!!";
+      }
+   }
+
+   @return $values;
+}
+
+/// Helper function: get a size from "$modular-scale" for "mobile" ratio
+/// @param {String | List} $sizes - key(s) from the $modular-scale map
+/// @require {Module} map - built-in sass module
+/// @require {Module} list - built-in sass module
+/// @require {Function} ms-scale - custom: get size based on a ratio
+/// @require {Map} $modular-scale
+/// @return {Number | List} - value(s) in rems
+@function msm($sizes) {
+   $values: ();
+
+   @each $size in $sizes {
+      @if map.has-key($modular-scale, $size) {
+         $scale: map.get($modular-scale, $size);
+         $value: ms-scale($modular-scale-ratio-mobile, $scale);
+         $values: list.append($values, $value, $separator: "space");
+      } @else {
+         @error "msm() function: Map $modular-scale does not have the key #{$size} !!!";
+      }
+   }
+
+   @return $values;
+}
+
+/// Use this mixin in your code to get a proper size, and
+/// media queries, if neccessary
+/// @param {String} $property - css property
+/// @param {String | List} $sizes - key(s) from the $modular-scale map
+/// @require {Function} msd - custom: get size based on "desktop" ratio
+/// @require {Function} msm - custom: get size based on "mobile" ratio
+/// @example
+///   @include ms(padding, xs xl);
+///   // will return, for example:
+///   // padding: 0.375rem 2.625rem;
+///   // @media (max-width: 61.99em) { padding: 0.6875rem 1.4375rem; }
+@mixin ms($property, $values) {
+   $m-values: msm($values);
+   $d-values: msd($values);
+   @if $design-approach == "mobile-first" {
+      #{$property}: $m-values;
+
+      // use emq to respect the design approach
+      // and media type
+      @include emq($modular-scale-critical-breakpoint) {
+         #{$property}: $d-values;
+      }
+   } @else if $design-approach == "desktop-first" {
+      #{$property}: $d-values;
+
+      // use emq to respect the design approach
+      // and media type
+      @include emq($modular-scale-critical-breakpoint) {
+         #{$property}: $m-values;
+      }
+   } @else {
+      @error "ms Mixin: design approach not supported: #{$design-approach} !!!";
+   }
+}

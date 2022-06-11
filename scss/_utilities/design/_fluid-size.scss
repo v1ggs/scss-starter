@@ -1,0 +1,237 @@
+/// Based on:
+/// @link https://www.madebymike.com.au/writing/precise-control-responsive-typography/
+/// @link https://websemantics.uk/tools/responsive-font-calculator/
+
+/// Required sass modules
+@use "sass:math";
+@use "sass:map";
+@use "sass:list";
+
+/// ========================================================================
+/// THESE SETTINGS ARE FOR THE FLUID SIZE MIXIN, NOT THE FUNCTION
+/// ========================================================================
+/// OVERRIDE THEM IN A DIFFERENT FILE, THEN IMPORT THAT FILE BEFORE THIS ONE
+/// ========================================================================
+
+// enable fluid size
+// you can use the mixin throughout the project, and disable the fluid size here,
+// and it will not break the process, it will return the max-size only
+/// @group fs mixin vaiable
+$enable-fluid-size: true !default;
+
+// base value to use for px to rem conversion
+// assign the project's "base font size" variable
+/// @group fluid-size function vaiable
+$fluid-size-base: 16px !default;
+
+// breakpoints map
+// override with the project's "breakpoints" map
+/// @type map
+/// @group fluid-size function vaiable
+$fluid-size-breakpoints: (
+   xxl: 1920px,
+   xl: 1600px,
+   l: 1280px,
+   m: 992px,
+   s: 768px,
+   xs: 576px,
+   xxs: 360px,
+) !default;
+
+/// List of methods to use for fluid width (different browser support)
+/// Calc is a method with css calc() without media-queries to limit the size.
+/// If you need to limit the fluid size (with media-queries),
+/// use "calc-mq", which is the default.
+/// You can use the "clamp" method for modern browsers, and $fluid-size-fallback for the older.
+/// @type list - available: "calc-mq", "calc", "min-max", "clamp"
+/// @example
+///   $fluid-size-methods: "calc", "clamp";
+///   $fluid-size-methods: "min-max";
+/// @group fs mixin vaiable
+$fluid-size-methods: "calc-mq" !default;
+
+/// a fallback if used methods are not supported by the browser
+/// @type boolean
+/// @example
+///   @include fluid-size(font-size, 2rem, 0.8rem, xxl, xs);
+///   // fallback is: font-size: 2rem;
+/// @group fs mixin vaiable
+$fluid-size-fallback: true !default;
+
+/// add min-height: 0vw; for safari, from:
+/// @link https://websemantics.uk/tools/responsive-font-calculator/
+/// @group fs mixin vaiable
+$fluid-size-use-safari-fix: true !default;
+
+/// Helper function: get the correct value,
+/// based on the input and convert it to rem
+/// @author vIGGS
+/// @requires {Module} map - built-in sass module
+/// @requires {Function} is-px - custom: check if unit is px
+/// @requires {Function} is-rem - custom: check if unit is rem
+/// @requires {Function} is-map - custom: check if a var is a map
+/// @requires {Function} to-rem - custom: convert px/unitless to rem
+/// @requires {Function} strip-unit - custom: remove unit
+/// @param {Number | String} $size - px/rem/unitless/key from breakpoints map
+/// @param {Map} $fluid-size-breakpoints - map with breakpoints
+/// @return {Number} - value in rem
+/// @example
+///   fluid-size-get(xxl);
+///   // returns the value from the "xxl" key in
+///   // the breakpoints map and converts it to rem
+/// @example
+///   fluid-size-get(1024);
+///   // assumes it's in px and converts it to rem
+@function fluid-size-get($size: null) {
+   @if $size {
+      // if we passed the breakpoints map and it has the key...
+      @if $fluid-size-breakpoints and
+         is-map($fluid-size-breakpoints) and
+         map.has-key($fluid-size-breakpoints, $size) {
+         // ...use that key
+         $size: map.get($fluid-size-breakpoints, $size);
+      }
+
+      // convert to rem, if px or unitless
+      @if is-px($size) or math.is-unitless($size) {
+         $size: to-rem($size);
+      } @else if not is-rem($size) {
+         @error "Fluid Size Module: Size must be in px, rem or unitless.";
+      }
+
+      @return $size;
+   } @else {
+      @error "Fluid Size Module: $size required!";
+   }
+}
+
+/// Helper function for the mixin
+/// - Produces fluid sizes with required methods
+/// - Doesn't produce fallbacks or media queries (use a mixin for that)
+/// @author vIGGS
+/// @requires {Module} math - built-in sass module
+/// @requires {Function} fluid-size-get - get the correct value in rem
+/// @requires {Function} strip-unit - custom: remove unit
+/// @requires {Variable} $fluid-size-base - base for px to rem conversion
+/// @requires {Map} $fluid-size-breakpoints - map with breakpoints
+/// @param {Number} $max-size - maximum font size
+/// @param {Number} $min-size - minimum font size
+/// @param {String | Number} $max-breakpoint - font scaling top limit
+/// @param {String | Number} $min-breakpoint - font scaling bottom limit
+/// @param {String} $method - what method to use for the fluid size
+@function fluid-size(
+   $max-size: null,
+   $min-size: null,
+   $max-breakpoint: null,
+   $min-breakpoint: null,
+   $method: "calc",
+) {
+   $max-size-rem: fluid-size-get($max-size);
+   $max-size-unitless: strip-unit($max-size-rem);
+
+   $min-size-rem: fluid-size-get($min-size);
+   $min-size-unitless: strip-unit($min-size-rem);
+
+   $max-breakpoint-rem: fluid-size-get($max-breakpoint);
+   $max-breakpoint-unitless: strip-unit($max-breakpoint-rem);
+
+   $min-breakpoint-rem: fluid-size-get($min-breakpoint);
+   $min-breakpoint-unitless: strip-unit($min-breakpoint-rem);
+
+   $calc-1: math.div($min-breakpoint-rem, 100);
+   $calc-2: 100 * math.div(
+      ($max-size-unitless - $min-size-unitless),
+      ($max-breakpoint-unitless - $min-breakpoint-unitless)
+   );
+
+   @if $method == "clamp" {
+      @return clamp($min-size-rem, calc($min-size-rem + ((1vw - $calc-1) * $calc-2)), $max-size-rem);
+   } @else if $method == "min-max" {
+      @return min(max($min-size-rem, calc($min-size-rem + ((1vw - $calc-1) * $calc-2))), $max-size-rem);
+   } @else if $method == "calc" {
+      @return calc($min-size-rem + ((1vw - $calc-1) * $calc-2));
+   } @else {
+      @error "fluid-size() Function: Method not specified.";
+   }
+}
+
+/// ===========================================================================
+/// ========================================================== FLUID SIZE MIXIN
+///
+/// - makes fluid size (width, font-size, margin, padding, border-radius)
+/// - Converts pixels and unitless to rem
+/// - Inserts multiple "fluid size" methods, including the fallback
+/// - If using calc() method, it can produce media-queries to limit the sizing
+/// - If fluid size is not enabled, returns only the $max-size value
+///
+/// @author vIGGS
+/// @requires {Module} map - built-in sass module
+/// @requires {Function} fluid-size-get - custom: get the correct value in rem
+/// @requires {Function} fluid-size - custom: make fluid size
+/// @requires {Number} $fluid-size-base - base for px to rem conversion
+/// @requires {Map} $fluid-size-breakpoints - map with breakpoints
+/// @requires {String | List} $fluid-size-methods - what method(s) to use for the fluid size
+/// @param {String} $property - css property to make fluid
+/// @param {Number} $max-size - maximum font size (px, rem, unitless)
+/// @param {Number} $min-size - minimum font size (px, rem, unitless)
+/// @param {String | Number} $max-breakpoint - scaling top limit, a key from $fluid-size-breakpoints
+/// @param {String | Number} $min-breakpoint - scaling bottom limit, a key from $fluid-size-breakpoints
+@mixin fs(
+   $property: null,
+   $max-size: null,
+   $min-size: null,
+   $max-breakpoint: null,
+   $min-breakpoint: null,
+) {
+   // basic requirements, for the fallback only
+   @if not ($property and $max-size) {
+      @error "fs Mixin: You must specify $property and $max-size.";
+   }
+
+   @if $enable-fluid-size {
+      @if not $min-size {
+         @error "fs Mixin: You must specify $min-size.";
+      }
+
+      // fallback, if enabled
+      @if $fluid-size-fallback {
+         #{$property}: fluid-size-get($max-size);
+      }
+
+      @if list.index($fluid-size-methods, "calc-mq") {
+         #{$property}: fluid-size($max-size, $min-size, $max-breakpoint, $min-breakpoint, "calc");
+
+         // make sizing limits with media queries
+         // below minimum breakpoint, the size stays the same (not fluid anymore)
+         // inclusive on purpose
+         @media (max-width: fluid-size-get($min-breakpoint)) {
+            #{$property}: fluid-size-get($min-size);
+         }
+
+         // above maximum breakpoint, the size stays the same (not fluid anymore)
+         @media (min-width: fluid-size-get($max-breakpoint)) {
+            #{$property}: fluid-size-get($max-size);
+         }
+      } @else if list.index($fluid-size-methods, "calc") {
+         #{$property}: fluid-size($max-size, $min-size, $max-breakpoint, $min-breakpoint, "calc");
+      }
+
+      @if list.index($fluid-size-methods, "min-max") {
+         #{$property}: fluid-size($max-size, $min-size, $max-breakpoint, $min-breakpoint, "min-max");
+      }
+
+      @if list.index($fluid-size-methods, "clamp") {
+         #{$property}: fluid-size($max-size, $min-size, $max-breakpoint, $min-breakpoint, "clamp");
+      }
+
+      @if $fluid-size-use-safari-fix {
+         // from: https://websemantics.uk/tools/responsive-font-calculator/
+         /* stylelint-disable-next-line length-zero-no-unit */
+         min-height: 0vw;
+      }
+   } @else {
+      // regular value, if no fluid size enabled to be able to always
+      // use this mixin, not only when fluid size is enabled in config
+      #{$property}: fluid-size-get($max-size);
+   }
+}

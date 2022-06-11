@@ -1,0 +1,11 @@
+/// Set no-js class on the html tag and use javascript
+/// to remove it. If a visitor has disabled javascript,
+/// the "no-js" class will stay, and you can use it to
+/// style elements for such visitors.
+
+// No js mixin
+@mixin no-js-style {
+   .no-js & {
+      @content;
+   }
+}

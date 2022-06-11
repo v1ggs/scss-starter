@@ -1,0 +1,62 @@
+/// Required sass modules
+@use "sass:map";
+@use "sass:math";
+@use "sass:list";
+@use "sass:string";
+
+/// Use this mixin in your code to get a proper size from
+/// $baseline-grid-scale map, from xxxxs to xxxxl
+/// @example
+///   @include gs(padding, xs xl);
+///   // will return, for example:
+///      padding: 0.5rem 1.5rem;
+///
+/// you can combine it with modular scale, which can be used for
+/// font-size, and the baseline grid for line heights and spacing
+/// modify $baseline-grid-scale map to fit your needs
+$baseline-grid-scale: (
+   xxxxl: 60px,
+   xxxl: 48px,
+   xxl: 32px,
+   xl: 24px,
+   l: 20px,
+   m: 16px, // default
+   s: 12px,
+   xs: 8px,
+   xxs: 4px,
+   xxxs: 2px,
+   xxxxs: 1px,
+) !default;
+
+/// Grid-scale function: retrieve a size from $baseline-grid-scale map
+/// @param {String} $size - a key from $baseline-grid-scale map
+/// @return {Number} - value in rems
+/// @example - margin: gs(s, l);
+@function gs($sizes) {
+   $values: ();
+
+   @each $size in $sizes {
+      @if map.has-key($baseline-grid-scale, $size) {
+         $value: map.get($baseline-grid-scale, $size);
+         $values: list.append($values, to-rem($value), $separator: "space");
+      } @else {
+         @error "gs() function: Map $baseline-grid-scale does not have the key #{$size} !!!";
+      }
+   }
+
+   @return $values;
+}
+
+/// Use this mixin in your code to get a proper size from
+/// $baseline-grid-scale map, from xxxxs to xxxxl
+/// @param {String} $property - css property
+/// @param {String | List} $sizes - key(s) from the $baseline-grid-scale
+/// @require {Function} gs - custom: get size
+/// @example
+///   @include gs(padding, xs xl);
+///   // will return, for example:
+///      padding: 0.5rem 1.5rem;
+@mixin gs($property, $values) {
+   $values: gs($values);
+   #{$property}: $values;
+}

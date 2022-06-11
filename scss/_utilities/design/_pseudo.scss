@@ -1,0 +1,116 @@
+// create pseudo-elements
+
+// utility, don't use in design
+@mixin utility-pseudo-element-base(
+   $position: absolute,
+   $content: "",
+   $top: false,
+   $right: false,
+   $bottom: false,
+   $left: false,
+   $width: false,
+   $height: false,
+) {
+   @include box-sizing;
+   position: $position;
+   content: $content;
+   @if $top {
+      top: $top;
+   }
+   @if $right {
+      right: $right;
+   }
+   @if $bottom {
+      bottom: $bottom;
+   }
+   @if $left {
+      left: $left;
+   }
+   @if $width {
+      width: $width;
+   }
+   @if $height {
+      height: $height;
+   }
+}
+
+@mixin pseudo-before() {
+   &::before {
+      @include utility-pseudo-element-base(
+         $position: absolute,
+         $content: ""
+      ) {
+         @content;
+      }
+   }
+}
+
+@mixin pseudo-after() {
+   &::after {
+      @include utility-pseudo-element-base(
+         $position: absolute,
+         $content: ""
+      ) {
+         @content;
+      }
+   }
+}
+
+// both before and after
+@mixin pseudos() {
+   &::before,
+   &::after {
+      @include utility-pseudo-element-base(
+         $position: absolute,
+         $content: ""
+      ) {
+         @content;
+      }
+   }
+}
+
+@mixin pseudo-before-stretched() {
+   &::before {
+      @include utility-pseudo-element-base(
+         $position: absolute,
+         $content: "",
+         $top: 0,
+         $right: 0,
+         $bottom: 0,
+         $left: 0,
+      ) {
+         @content;
+      }
+   }
+}
+
+@mixin pseudo-after-stretched() {
+   &::after {
+      @include utility-pseudo-element-base(
+         $position: absolute,
+         $content: "",
+         $top: 0,
+         $right: 0,
+         $bottom: 0,
+         $left: 0,
+      ) {
+         @content;
+      }
+   }
+}
+
+@mixin pseudos-stretched() {
+   &::before,
+   &::after {
+      @include utility-pseudo-element-base(
+         $position: absolute,
+         $content: "",
+         $top: 0,
+         $right: 0,
+         $bottom: 0,
+         $left: 0,
+      ) {
+         @content;
+      }
+   }
+}

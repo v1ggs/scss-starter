@@ -1,0 +1,38 @@
+/*! Created using sass-starter */
+@charset "UTF-8";
+
+// ====================================================
+// ============================================= CONFIG
+@import "_utilities/load-config";
+
+// ====================================================
+// =============================================== BASE
+
+@import "main/base/base";
+@import "main/base/font-face";
+@import "main/base/animations";
+
+// ====================================================
+// ============================================= LAYOUT
+
+@import "main/layout/header";
+@import "main/layout/main";
+@import "main/layout/sidebar";
+@import "main/layout/footer";
+
+// ====================================================
+// ========================================= COMPONENTS
+
+@import "main/components/link";
+@import "main/components/text";
+
+// ====================================================
+// ============================================ MODULES
+
+@import "main/modules/card";
+
+// ====================================================
+// ============================================== PRINT
+
+// keep it at the bottom
+@import "main/print/print";

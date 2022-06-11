@@ -1,0 +1,9 @@
+// vertical rule
+@mixin vr($width: 1px, $margin-sides: 0, $background-color: #000000) {
+   @include box-sizing;
+   display: inline-block;
+   width: $width;
+   height: 100%;
+   margin: 0 $margin-sides;
+   background-color: $background-color;
+}

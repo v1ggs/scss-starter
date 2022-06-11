@@ -1,0 +1,18 @@
+// if you use a universal selector to set box-sizing for all
+// you can disable this
+
+@mixin box-sizing {
+   @if $use-box-sizing {
+      box-sizing: border-box;
+   }
+}
+
+@mixin box-sizing-universal {
+   @if not $use-box-sizing {
+      *,
+      *::before,
+      *::after {
+         box-sizing: inherit;
+      }
+   }
+}

@@ -1,0 +1,23 @@
+// horizontal rule
+// use on "hr" tag,
+// name the selector whatever you want
+@mixin hr(
+   $height: 1px,
+   $margin-shorthand: 0,
+   $background-image: #000000,
+) {
+   @include box-sizing;
+   display: block;
+   height: $height;
+   margin: $margin-shorthand;
+   border: 0;
+   @if type-of($background-image) == "color" {
+      color: $background-image;
+      background-color: $background-image;
+   } @else {
+      background-image: $background-image;
+   }
+}
+
+// some ideas:
+// https://www.alexanderonlinemedia.com/36-free-horizontal-rule-images/

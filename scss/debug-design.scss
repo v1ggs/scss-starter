@@ -1,0 +1,26 @@
+/// Use this file for debugging your design, with
+/// all helpers that you use in front-end development.
+///
+/// Included:
+/// - sass-mq - show breakpoints
+/// - bashold.it - show baseline grid (page overlay)
+/// - pesticide.scss - show elements outlines
+///
+/// For debugging your code use debug-code.scss.
+/// **************************************************
+/// Don't forget to remove it in production...
+/// **************************************************
+@charset "UTF-8";
+
+// ====================================================
+// ============================================= CONFIG
+@import "_utilities/load-config";
+
+// ====================================================
+// ============================================== DEBUG
+@import "_utilities/debug/basehold-it";
+@import "_utilities/debug/pesticide";
+
+@include emq-show-breakpoints;
+@include basehold-it;
+@include pesticide;

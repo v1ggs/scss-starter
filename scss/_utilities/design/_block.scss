@@ -1,0 +1,6 @@
+// use on "div" tag,
+// name the selector whatever you want
+@mixin block($display: false) {
+   @include box-sizing;
+   @if $display { display: $display; }
+}

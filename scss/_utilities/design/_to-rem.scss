@@ -1,0 +1,9 @@
+// to-rem-util function works regardless of config, it uses
+// two inputs for conversion, and can't be used in design.
+// to-rem function is config-dependent, and can be used in design.
+
+$base-font-size: 16px !default;
+
+@function to-rem($size) {
+   @return to-rem-util($size, $base-font-size);
+}

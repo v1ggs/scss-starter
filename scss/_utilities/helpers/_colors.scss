@@ -1,0 +1,164 @@
+/// @author vIGGS
+/// @link https://github.com/v1ggs/scss-starter
+
+/// Idea from:
+/// @link https://learnui.design/blog/color-in-ui-design-a-practical-framework.html
+
+/// Info:
+/// This is not a tool for building a color pallette - it changes the color's hue and saturation.
+/// It is being used to create tints and shades of a predefined color
+/// e.g. for states like hover/active etc.
+/// 50% is the default color, it will not be changed. Lighter colors are below, darker above.
+
+/// Usage:
+/// To get a darker yellow color, f.ex., use:
+/// $yellow-70: color(yellow, 70%);
+
+@use "sass:color";
+@use "sass:math";
+@use "sass:list";
+
+/// Helper function: Get the closest hue with higher luminance
+/// @author vIGGS
+/// @param {Color} $color - color to get its closest higher luminance hue
+/// @return {Number} - color hue in deg
+@function get-closest-high-luminance($color) {
+   $hue: color.hue($color);
+
+   @if $hue == 0deg {
+      // if red, move it towards yellow, when increasing lightness
+      @return 60deg;
+   } @else if $hue == 120deg {
+      // if green, move it towards cyan, when increasing lightness
+      @return 180deg;
+   } @else if $hue == 240deg {
+      // if blue, move it towards cyan, when increasing lightness
+      @return 180deg;
+   }
+
+   $highs: 60deg, 180deg, 300deg;
+
+   // https://stackoverflow.com/questions/41666041/how-to-get-the-index-of-the-value-in-a-list-closest-to-x
+   $best-value: 10000deg;
+   $best-index: -1;
+   @for $i from 1 through list.length($highs) {
+      $value: math.abs($hue - list.nth($highs, $i));
+      @if $value < $best-value {
+         $best-value: $value;
+         $best-index: $i;
+      }
+   }
+
+   @return list.nth($highs, $best-index);
+}
+
+/// Helper function: Get the closest hue with lower luminance
+/// @author vIGGS
+/// @param {Color} $color - color to get its closest lower luminance hue
+/// @return {Number} - color hue in deg
+@function get-closest-low-luminance($color) {
+   $hue: color.hue($color);
+
+   @if $hue == 60deg {
+      // if yellow, move it towards red, when decreasing lightness
+      @return 0deg;
+   } @else if $hue == 180deg {
+      // if cyan, move it towards blue, when decreasing lightness
+      @return 240deg;
+   } @else if $hue == 300deg {
+      // if magenta, move it towards red, when decreasing lightness
+      @return 360deg;
+   }
+
+   $lows: 0deg, 120deg, 240deg, 360deg;
+
+   // https://stackoverflow.com/questions/41666041/how-to-get-the-index-of-the-value-in-a-list-closest-to-x
+   $best-value: 10000deg;
+   $best-index: -1;
+   @for $i from 1 through list.length($lows) {
+      $value: math.abs($hue - list.nth($lows, $i));
+      @if $value < $best-value {
+         $best-value: $value;
+         $best-index: $i;
+      }
+   }
+
+   @return list.nth($lows, $best-index);
+}
+
+/// Main function: Get color tint or shade, with modified saturation and hue
+/// @author vIGGS
+/// @require {function} get-closest-high-luminance
+/// @require {function} get-closest-low-luminance
+/// @param {Color} $color - color to get its tint or shade
+/// @param {Percent} $percentage - tint < 50% < shade (default 50%)
+/// @return {Color} - lighter or darker color
+@function color($color: null, $percent: 50%) {
+   // validate percentage
+   // if percentage is 50, do not modify the color, it's the default one
+   @if $percent > 100% or
+      $percent < 0% or
+      $percent == 50% {
+      @return $color;
+   }
+
+   $hue: color.hue($color);
+   $saturation: color.saturation($color);
+   $lightness: color.lightness($color);
+
+   // each span - between 0 and 50%, and between 50% and 100% - is a span of 100%,
+   // therefore any percentage difference is multiplied with 2
+   $scale-lightness-by: ((50% - $percent) * 2);
+   $scale-lightness-by-unitless: math.div($scale-lightness-by, $scale-lightness-by * 0 + 1);
+   $closest-hue: $hue;
+   $saturation-diff: 0;
+
+   @if $percent < 50% {
+      // lightening the color
+      // min saturation will be current saturation or 10%
+      @if $saturation <= 10% {
+         $saturation-diff: 0%;
+      } @else {
+         $saturation-diff: 10% - $saturation;
+      }
+
+      // get the closest high luminance hue to move the current hue towards it
+      $closest-hue: get-closest-high-luminance($color);
+   } @else {
+      // darkening the color
+      // max saturation will be current saturation or 90%
+      @if $saturation >= 90% {
+         $saturation-diff: 0%;
+      } @else {
+         $saturation-diff: $saturation - 90%;
+      }
+
+      // get the closest low luminance hue to move the current hue towards it
+      $closest-hue: get-closest-low-luminance($color);
+   }
+
+   $saturation-step: math.div($saturation-diff, 100);
+   $scale-saturation-by: $saturation-step * $scale-lightness-by-unitless;
+
+   $hue-diff: $closest-hue - $hue;
+   $hue-step: math.div($hue-diff, 100);
+
+   // just an arbitrary number to divide the scale-lightnes-by with
+   $scale-hue-by: $hue-step * math.abs(math.div($scale-lightness-by-unitless, 3));
+
+   // math.div($scale-lightness-by, $scale-lightness-by * 0 + 1)
+
+   // first modify lightness
+   $new-color: color.scale(
+      $color,
+      $lightness: $scale-lightness-by,
+   );
+
+   $new-color: color.adjust(
+      $new-color,
+      $hue: $scale-hue-by,
+      $saturation: $scale-saturation-by
+   );
+
+   @return $new-color;
+}

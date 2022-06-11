@@ -1,0 +1,44 @@
+// in your main file, import this file first after
+// the config and required utilities
+
+/// ====================================================
+// The :root CSS pseudo-class matches the root element of a tree
+// representing the document.
+// It represents the <html> element and is identical to the selector html,
+// except that its specificity is higher.
+// It can be useful for declaring global CSS variables.
+:root {
+   @include root;
+}
+
+// asterisk selector for box-sizing
+@include box-sizing-universal;
+
+// media query to disable animations if reduced motion preferred
+@include reduced-motion;
+
+// style selected text and elements targeted with a link
+@include selection;
+@include target;
+
+/// ====================================================
+/// Document body and its inner container
+// SETTINGS - override with config
+// body inner container
+$page-max-width: 992px !default;
+
+// don't use "page" class if you work with wordpress,
+// it sets class "page" for pages
+.body {
+   @include body;
+
+   &__inner {
+      @include block(flex);
+      width: 100%;
+      margin: 0 auto;
+
+      @if $page-max-width {
+         max-width: to-rem($page-max-width);
+      }
+   }
+}

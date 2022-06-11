@@ -1,0 +1,16 @@
+/// @link https://developer.mozilla.org/en-US/docs/Web/HTML/Element/main
+/// <main>
+/// The <main> HTML element represents the dominant content of the <body>
+/// of a document. The main content area consists of content that is
+/// directly related to or expands upon the central topic of a document,
+/// or the central functionality of an application.
+///
+/// The content of a <main> element should be unique to the document.
+/// Content that is repeated across a set of documents or document
+/// sections such as sidebars, navigation links, copyright information,
+/// site logos, and search forms shouldn't be included unless the search
+/// form is the main function of the page.
+/// <main> doesn't contribute to the document's outline; that is, unlike
+/// elements such as <body>, headings such as <h2>, and such, <main>
+/// doesn't affect the DOM's concept of the structure of the page.
+/// It's strictly informative.

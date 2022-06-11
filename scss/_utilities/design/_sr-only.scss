@@ -1,0 +1,35 @@
+/// Text meant only for screen readers.
+/// Content which should be visually hidden, but remain accessible to assistive
+/// technologies such as screen readers, can be styled using the .sr-only class.
+/// This can be useful in situations where additional visual information or cues (such
+/// as meaning denoted through the use of color) need to also be conveyed to non-visual users.
+@mixin sr-only($focusable: false) {
+   position: absolute !important;
+   overflow: hidden;
+   clip: rect(1px, 1px, 1px, 1px);
+   clip-path: inset(50%);
+   width: 1px;
+   height: 1px;
+   margin: -1px;
+   padding: 0;
+   border: 0;
+   word-wrap: normal !important;
+
+   @if $focusable {
+      @include sr-only-focusable;
+   }
+}
+
+/// For visually hidden interactive controls, such as traditional "skip" links,
+/// .sr-only can be combined with the .sr-only-focusable class. This will ensure
+/// that the control becomes visible once focused (for sighted keyboard users).
+@mixin sr-only-focusable {
+   &:active,
+   &:focus {
+      clip: auto !important;
+      clip-path: none;
+      height: auto;
+      width: auto;
+      margin: 0;
+   }
+}

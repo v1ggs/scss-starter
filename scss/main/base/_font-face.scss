@@ -1,0 +1,29 @@
+/// @font-face
+/// Define custom fonts here
+
+/// https://dev.opera.com/articles/better-font-face/
+/// Just including a @font-face block doesn’t actually initiate
+/// a download of the remote font file from the server in
+/// almost all browsers (except IE8).
+
+/// https://csswizardry.com/2020/05/the-fastest-google-fonts/
+/// It’s widely accepted that self-hosted fonts are the fastest option:
+/// same origin means reduced network negotiation, predictable URLs
+/// mean we can preload, self-hosted means we can set our own cache-control
+/// directives, and full ownership mitigates the risks that come with
+/// leaving static assets on third-party origins.
+
+/// https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display
+/// font-display
+/// The font-display descriptor determines how a font face is
+/// displayed based on whether and when it is downloaded and
+/// ready to use.
+/// * auto: The font display strategy is defined by the user agent.
+/// * block: Gives the font face a short block period and an
+///   infinite swap period.
+/// * swap: Gives the font face an extremely small block period
+///   and an infinite swap period.
+/// * fallback: Gives the font face an extremely small block
+///   period and a short swap period.
+/// * optional: Gives the font face an extremely small block
+///   period and no swap period.

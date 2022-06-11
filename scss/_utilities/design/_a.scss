@@ -1,0 +1,147 @@
+@use "sass:list";
+
+/// @author vIGGS
+/// @link https://github.com/v1ggs/scss-starter
+
+/// https://www.w3.org/TR/2011/WD-html5-20110525/text-level-semantics.html#the-a-element
+/// The a element may be wrapped around entire paragraphs, lists, tables,
+/// and so forth, even entire sections, so long as there is no interactive
+/// content within (e.g. buttons or other links).
+///
+/// This however poses some accesibility problems, so maybe it's a good
+/// idea to use the "link wrapper" below.
+
+/// https://www.w3.org/TR/2011/WD-html5-20110525/text-level-semantics.html#the-a-element
+/// If the a element has an href attribute, then it represents a hyperlink
+/// (a hypertext anchor). If the a element has no href attribute, then the
+/// element represents a placeholder for where a link might otherwise have
+/// been placed, if it had been relevant.
+
+/// As per WCAG 2.1, the minimum target size for touch or mouse should
+/// be 44×44 pixel. The size is not fixed and it could change depending
+/// on the use case. However, 44×44 pixel is a good starting point.
+///
+/// This will add padding on a link, and pull the
+/// surrounding content back using negative margins.
+/// Specify it the same way as shorthand margin or
+/// padding, or set as an empty list - `()` - to disable.
+/// @type List
+/// @example
+///   // all sides the same
+///   $increase-link-surface-on-mobile: 4px;
+///   // all sides different
+///   $increase-link-surface-on-mobile: 4px 8px 2px 0;
+$increase-link-surface-on-mobile: () !default;
+
+// set any of these false to disable them
+$link-color: #0000ff !default; // required
+$link-decoration: none !default;
+$link-transition: false !default;
+$link-hover-color: #000099 !default;
+$link-hover-decoration: underline !default;
+$link-focus-outline: false !default;
+$link-active-color: #000066 !default;
+$link-visited-color: false !default;
+$link-wrapper-pseudo: after !default; // icon fonts use pseudo-elements too
+
+// use on "a" tag,
+// name the selector whatever you want
+// if you use html "a" tag, you will not get
+// the "wrapper" and the "increased" link
+@mixin a {
+   @include box-sizing;
+   color: $link-color;
+   @if $link-decoration {
+      text-decoration: $link-decoration;
+   }
+   @if $link-transition {
+      transition: $link-transition;
+   }
+
+   &:hover,
+   &:focus {
+      @if $link-hover-color and
+         $link-hover-color != $link-color {
+         color: $link-hover-color;
+      }
+      @if $link-hover-decoration and
+         $link-hover-decoration != $link-decoration {
+         text-decoration: $link-hover-decoration;
+      }
+   }
+
+   @if $link-focus-outline {
+      &:focus {
+         outline: $link-focus-outline;
+      }
+   }
+
+   @if $link-active-color and
+      $link-active-color != $link-color {
+      &:active {
+         color: $link-active-color;
+      }
+   }
+
+   @if $link-visited-color and
+      $link-visited-color != $link-color {
+      &:visited {
+         color: $link-visited-color;
+      }
+   }
+
+   // Idea from from:
+   // https://getbootstrap.com/docs/4.3/utilities/stretched-link/
+   // https://stackoverflow.com/questions/796087/make-a-div-into-a-link
+   // don't set it on all "a" tags,
+   // only if a class/id is being used
+   @if $link-wrapper-pseudo and
+      #{&} != "a" {
+      &--wrapper {
+         &::#{$link-wrapper-pseudo} {
+            /* don't forget to set position:relative on parent */
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+         }
+      }
+   }
+
+   // don't set it on all "a" tags,
+   // only if a class/id is being used
+   @if list.length($increase-link-surface-on-mobile) > 0 and
+      #{&} != "a" {
+      $margins: ();
+
+      @each $margin in $increase-link-surface-on-mobile {
+         $margins: list.append($margins, (-1 * $margin));
+      }
+
+      /// only on touch screen
+      /// unreliable - go to:
+      /// @link https://modernizr.com/download
+      /// choose "Touch Events" and read the info
+      .touchevents &--increased {
+         /* use with modernizr */
+         display: inline-block; // requied to set vertical padding
+         padding: $increase-link-surface-on-mobile;
+         margin: $margins;
+      }
+
+      /// media query when the primary pointing device
+      /// does not have accurate pointing
+      /// don't use "(hover: none)"
+      /// @link https://stackoverflow.com/a/70943154
+      @include emq("(pointer: coarse)") {
+         &--increased {
+            display: inline-block; // requied to set vertical padding
+            padding: $increase-link-surface-on-mobile;
+            margin: $margins;
+         }
+      }
+   }
+}

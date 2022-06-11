@@ -1,0 +1,56 @@
+/// @author vIGGS
+/// @link https://github.com/v1ggs/scss-starter
+
+/// Create a grey pallete to be in harmony with the chosen color
+///
+/// I used https://palx.jxnblk.com/ as a reference, and adjusted "formulas" by "trial and error".
+/// I'm sure it can be done a better way, but since I got exact or almost exact values
+/// at $intensity: 1, I left it like this.
+
+/// Usage:
+/// Use neutral() for 50% grey.
+/// Use neutral(33%, blue) to get 33% grey, slightly colored with blue.
+/// Increase intensity for stronger blue, default is 1 - range from 0 to infinity,
+/// but saturation will be limited at 100%.
+
+@use "sass:color";
+@use "sass:math";
+
+/// Get the nuance of either pure or colored grey
+/// @author vIGGS
+/// @param {Percent} $percentage - grey level, smaller percentage - lighter grey
+/// @param {Color} $color - color to mix with the pure grey, to have it slightly colored
+/// @param {Number} $intensity - amount of color to mix with grey - 0 to infinity
+/// @return {Color} - pure or colored grey
+@function neutral($percent: 50%, $color: null, $intensity: 1) {
+   $grey: color.mix(black, white, $percent);
+
+   @if $color {
+      $hue: color.hue($color);
+      $lightness: color.lightness($color);
+      $saturation-new: 0%;
+
+      $magic-number: 9.35;
+
+      @if $percent <= 50% {
+         $saturation-new: math.min(
+            $magic-number + $intensity + (($lightness - 50) * 0.01),
+            100%
+         );
+      } @else {
+         // if grey is darker, add some more saturation
+         $saturation-new: math.min(
+            $magic-number + $intensity + (math.div($percent - 50, 8.5)) + (($lightness - 50) * 0.13),
+            100%
+         );
+      }
+
+      $grey: color.change(
+         $grey,
+         $hue: $hue,
+         $saturation: $saturation-new
+      );
+   }
+
+   @return $grey;
+}

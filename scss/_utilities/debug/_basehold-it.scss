@@ -1,0 +1,71 @@
+/// @link https://basehold.it/
+/// If you need another grid, use basehold.it to get the css and svg files.
+/// Add new grid to $basehold-it map. Use its size as the map key.
+/// Use the "background-size" property from the css and add it to "size" in the map.
+/// Use the svg file referenced in css, clean it, url-encode it and add it to "img" in the map.
+/// $baseline-grid-base is used as the grid base.
+/// **************************** Set it always in px. ****************************
+
+@use "sass:math";
+@use "sass:map";
+
+/// baseline grid base (if you use it, everything on page should fit into this grid)
+$baseline-grid-base: 4px !default;
+
+/// display the baseline grid on the page, for development purposes.
+/// remove before publishing.
+$use-basehold-it: true !default;
+
+$basehold-it: (
+   4px: (
+      img: url("data:image/svg+xml,%3Csvg viewbox='0 0 4 4' xmlns='http://www.w3.org/2000/svg'%3E%3Cline x1='0' x2='4' y1='4' y2='4' stroke='rgba(0,0,0,.8)'/%3E%3C/svg%3E "),
+      size: 4px 4px,
+   ),
+   8px: (
+      img: url("data:image/svg+xml,%3Csvg viewbox='0 0 4 8' xmlns='http://www.w3.org/2000/svg'%3E%3Cline x1='0' x2='4' y1='8' y2='8' stroke='rgba(0,0,0,.8)'/%3E%3C/svg%3E%0A"),
+      size: 4px 8px,
+   ),
+   10px: (
+      img: url("data:image/svg+xml,%3Csvg viewbox='0 0 4 10' xmlns='http://www.w3.org/2000/svg'%3E%3Cline x1='0' x2='4' y1='10' y2='10' stroke='rgba(0,0,0,.8)'/%3E%3C/svg%3E%0A"),
+      size: 4px 10px,
+   ),
+   16px: (
+      img: url("data:image/svg+xml,%3Csvg viewbox='0 0 4 16' xmlns='http://www.w3.org/2000/svg'%3E%3Cline x1='0' x2='4' y1='16' y2='16' stroke='rgba(0,0,0,.8)'/%3E%3C/svg%3E%0A"),
+      size: 4px 16px,
+   ),
+   24px: (
+      img: url("data:image/svg+xml,%3Csvg viewbox='0 0 4 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cline x1='0' x2='4' y1='24' y2='24' stroke='rgba(0,0,0,.8)'/%3E%3C/svg%3E%0A"),
+      size: 4px 24px,
+   ),
+);
+
+@mixin basehold-it {
+   @if $use-basehold-it {
+      body {
+         /* basehold.it */
+         position: relative;
+
+         &::after {
+            /* basehold.it */
+            display: block;
+            content: "";
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            width: auto;
+            height: auto;
+            background-image: map.get($basehold-it, #{$baseline-grid-base}, img);
+            background-size: map.get($basehold-it, #{$baseline-grid-base}, size);
+            z-index: 999999;
+            pointer-events: none;
+         }
+
+         &:active::after {
+            /* basehold.it */
+            display: none;
+         }
+      }
+   }
+}

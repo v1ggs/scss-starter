@@ -1,0 +1,80 @@
+/// Document body
+
+// SETTINGS - override with config
+// Set base font-size and line-height to maintain
+// the vertical rhythm, then override where neccessary
+$body-background-image: #ffffff !default;
+$body-font-size: 1rem !default;
+$body-font-family: "Arial", sans-serif !default;
+$body-font-weight: 400 !default;
+$body-line-height: 1.5 !default;
+$body-text-color: #000000 !default;
+$body-text-rendering: optimizelegibility !default; // 3
+
+/// ====================================================
+
+@mixin body {
+   @include box-sizing;
+   width: 100%;
+   margin: 0;
+   padding: 0;
+   border: 0;
+   background-image: $body-background-image;
+   @include ff($body-font-family);
+   font-size: $body-font-size;
+   font-weight: $body-font-weight;
+   line-height: $body-line-height;
+   color: $body-text-color;
+   text-align: left;
+   -webkit-tap-highlight-color: rgba(black, 0); // 1
+   -webkit-text-size-adjust: 100%; // 2
+
+   @if $body-text-rendering and
+      $body-text-rendering != unset {
+      text-rendering: $body-text-rendering; // 3
+   }
+}
+
+// 1) -webkit-tap-highlight-color
+// Change the default tap highlight to be completely transparent in iOS
+// Inherited
+
+// 2) -webkit-text-size-adjust
+// Bootstrap:
+// Prevent adjustments of font size after orientation changes in iOS.
+///
+// https://developer.mozilla.org/en-US/docs/Web/CSS/text-size-adjust
+// The text-size-adjust CSS property controls the text inflation algorithm used on some smartphones and tablets.
+// Other browsers will ignore this property.
+// ...
+// Because many websites have not been developed with small devices in mind,
+// mobile browsers differ from desktop browsers in the way they render web pages.
+// Instead of laying out pages at the width of the device screen,
+// they lay them out using a viewport that is much wider, usually 800 or 1000 pixels.
+// To map the extra-wide layout back to the original device size,
+// they either show only part of the whole render or scale the viewport down to fit.
+///
+// Since text that has been scaled down to fit a mobile screen may be very small,
+// many mobile browsers apply a text inflation algorithm to enlarge the text
+// to make it more readable.
+// When an element containing text uses 100% of the screen's width,
+// the algorithm increases its text size, but without modifying the layout.
+// The text-size-adjust property allows web authors to disable or modify this behavior,
+// as web pages designed with small screens in mind do not need it.
+// ...
+// As hinted at above, on a properly designed responsive site the text-size-adjust behavior is not needed,
+// so developers can elect to turn it off by specifying a value of none.
+
+/// 3) text-rendering
+/// auto | optimizeSpeed | optimizeLegibility | geometricPrecision | inherit | initial | revert | revert-layer | unset
+/// @link https://developer.mozilla.org/en-US/docs/Web/CSS/text-rendering
+/// The text-rendering CSS property provides information to the rendering
+/// engine about what to optimize for when rendering text.
+/// The browser makes trade-offs among speed, legibility,
+/// and geometric precision.
+/// Note: The text-rendering property is an SVG property that is not defined
+/// in any CSS standard. However, Gecko and WebKit browsers let you apply
+/// this property to HTML and XML content on Windows, macOS, and Linux.
+/// One very visible effect is optimizeLegibility, which enables ligatures
+/// (ff, fi, fl, etc.) in text smaller than 20px for some fonts (for example,
+/// Microsoft's Calibri, Candara, Constantia, and Corbel, or the DejaVu font family).

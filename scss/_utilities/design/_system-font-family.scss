@@ -1,0 +1,113 @@
+/// @author vIGGS
+/// @link https://github.com/v1ggs/scss-starter
+
+// =======================================
+// Consider system fonts for small screens
+// =======================================
+
+// =======================================
+// Drawbacks:
+// https://www.smashingmagazine.com/2015/11/using-system-ui-fonts-practical-guide/#approach-b
+// ======================================
+
+// =======================================
+/// https://dev.opera.com/articles/better-font-face/
+/// Just including a @font-face block doesn’t actually initiate
+/// a download of the remote font file from the server in
+/// almost all browsers (except IE8).
+// =======================================
+
+@use "sass:map";
+@use "sass:list";
+@use "sass:string";
+
+// breakpoint below which we use system fonts
+$system-font-breakpoint: $view-switch-breakpoint !default;
+
+/// System UI fonts
+/* stylelint-disable max-line-length, value-keyword-case */
+$system-font-family: (
+   // https://devhints.io/css-system-font-stack
+   sans-serif: (-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif),
+   // https://systemfontstack.com/
+   serif: ("Iowan Old Style", "Apple Garamond", Baskerville, "Times New Roman", "Droid Serif", Times, "Source Serif Pro", serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"),
+   // https://systemfontstack.com/
+   monospace: (Menlo, Consolas, Monaco, "Liberation Mono", "Lucida Console", monospace),
+   cursive: (cursive),
+   fantasy: (fantasy),
+);
+/* stylelint-enable max-line-length, value-keyword-case */
+
+/// Mixin to make use of system ui fonts for smaller screens.
+/// It uses always the mobile-first way, regardless of your config:
+/// it sets the system default font as a font-family, and then uses
+/// media-query, above certain breakpoint, to assign the custom font.
+/// This is to prevent some browsers from downloading the font when
+/// it's not required.
+/// @example
+///   For example:
+///   @include ff("My custom font", sans-serif);
+///   // will produce:
+///   // font-family: -apple-system, BlinkMacSystemFont, "Segoe UI"...
+///   // @media(min-width: 62rem) { font-family: "My custom font", -apple-system, BlinkMacSystemFont... }
+/// @author vIGGS
+/// @param {List} $font-family-list - font families with a generic font family at the end
+/// @require {Module} map - built-in sass module
+/// @require {Module} list - built-in sass module
+/// @require {Module} string - built-in sass module
+/// @require {Module} emq - easier-sass-mq - custom module for media-queries
+/// @require {Map} $system-font-family - map with system ui fonts
+/// @require {String} $system-font-breakpoint - breakpoint below which we use system fonts
+@mixin ff($font-family-list...) {
+   $fonts-length: list.length($font-family-list);
+   $generic-font-family: list.nth($font-family-list, $fonts-length);
+   $custom-font-family: ();
+   $system-ui-font: ();
+
+   @if $fonts-length == 0 {
+      @error "ff Mixin: You must specify font family !!!";
+   } @else if $fonts-length == 1 {
+      // list passed as a variable
+      $font-family-list: list.nth($font-family-list, 1);
+
+      @if type-of($font-family-list) == "list" {
+         $fonts-length: list.length($font-family-list);
+         $generic-font-family: list.nth($font-family-list, $fonts-length);
+      } @else {
+         @error "ff Mixin: You must specify both font family and generic font family !!!";
+      }
+   }
+
+   @if map.has-key($system-font-family, $generic-font-family) {
+      $system-ui-font: map.get($system-font-family, $generic-font-family);
+   } @else {
+      @debug "$generic-font-family: " + $generic-font-family;
+      @error "ff Mixin: You must specify generic font family (e.g. sans-serif) !!!";
+   }
+
+   @for $i from 1 to $fonts-length {
+      // allways quote, regardless of input
+      $custom-font-family: list.append(
+         $custom-font-family,
+         string.quote(string.unquote(list.nth($font-family-list, $i))),
+         "comma"
+      );
+   }
+
+   // mobile-first approach on purpose for the browser
+   // to not download the font if not required (IE10-)
+   /* stylelint-disable max-line-length, value-keyword-case */
+   font-family: $system-ui-font;
+   /* stylelint-enable max-line-length, value-keyword-case */
+
+   // force min width
+   @include emq(min-#{string.unquote($system-font-breakpoint)}) {
+      /* stylelint-disable max-line-length, value-keyword-case */
+      font-family: $custom-font-family, $system-ui-font;
+      /* stylelint-enable max-line-length, value-keyword-case */
+   }
+}
+
+/// It could be done with custom properties instead of writting that many
+/// system ui fonts all over the code, but, for now, I don't like that approach.
+/// It probably won't be printed more than a few times anyway.

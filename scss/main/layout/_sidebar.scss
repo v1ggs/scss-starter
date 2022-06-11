@@ -1,0 +1,20 @@
+/// @link https://developer.mozilla.org/en-US/docs/Web/HTML/Element/aside
+///  <aside>: The Aside element
+/// The <aside> HTML element represents a portion of a document whose
+/// content is only indirectly related to the document's main content.
+/// Asides are frequently presented as sidebars or call-out boxes.
+/// Do not use the <aside> element to tag parenthesized text,
+/// as this kind of text is considered part of the main flow.
+///
+/// @link https://stackoverflow.com/questions/38023089/should-i-have-aside-element-ouside-or-inside-of-main-element
+/// In HTML5 it’s only defined that aside is "related to the content
+/// around the aside element".
+/// In HTML 5.1 (CR):
+/// @link https://www.w3.org/TR/html51/sections.html#the-aside-element
+/// the definition became more specific, as it now says that
+/// aside is "related to the content of the parenting sectioning content".
+/// Following the newer definition, the aside element should be inside of
+/// the section element to which it is related. The main element is not a
+/// sectioning element (elements like article, section, body, figure etc. are).
+/// You can of course still place aside in main, but it will be related to
+/// the nearest sectioning element parent of main.

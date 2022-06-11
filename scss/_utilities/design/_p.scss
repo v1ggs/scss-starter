@@ -1,0 +1,6 @@
+// use on "p" tag,
+// name the selector whatever you want
+@mixin p {
+   @include box-sizing;
+   margin-top: 0;
+}

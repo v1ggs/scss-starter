@@ -1,0 +1,62 @@
+/*! Created using sass-starter */
+/* stylelint-disable max-line-length, value-keyword-case */
+/* stylelint-enable max-line-length, value-keyword-case */
+.body {
+   background-image: #e3beb5;
+}
+
+.link {
+   box-sizing: border-box;
+   color: red;
+   text-decoration: none;
+}
+.link:hover, .link:focus {
+   color: #990000;
+   text-decoration: underline;
+}
+.link:active {
+   color: yellow;
+}
+.link:visited {
+   color: #e38f82;
+}
+.link--wrapper::after {
+   /* don't forget to set position:relative on parent */
+   content: "";
+   position: absolute;
+   top: 0;
+   left: 0;
+   width: 100%;
+   height: 100%;
+   z-index: 10;
+}
+.touchevents .link--increased {
+   /* use with modernizr */
+   display: inline-block;
+   padding: 4px 8px;
+   margin: -4px -8px;
+}
+@media (pointer: coarse) {
+   .link--increased {
+      display: inline-block;
+      padding: 4px 8px;
+      margin: -4px -8px;
+   }
+}
+
+a {
+   box-sizing: border-box;
+   color: red;
+   text-decoration: none;
+}
+a:hover, a:focus {
+   color: #990000;
+   text-decoration: underline;
+}
+a:active {
+   color: yellow;
+}
+a:visited {
+   color: #e38f82;
+}
+/*# sourceMappingURL=../sourcemaps/pages/special-page.css.map */

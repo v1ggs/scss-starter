@@ -1,0 +1,29 @@
+// to-rem-util function works regardless of config, it uses
+// two inputs for conversion, and can't be used in design.
+// to-rem function is config-dependent, and can be used in design.
+
+/// Required sass modules
+@use "sass:math";
+@use "sass:string";
+
+/// Convert (px or unitless) to rem or unitless if 0
+/// @author vIGGS
+/// @requires {Module} math - built-in sass module
+/// @requires {Module} string - built-in sass module
+/// @requires {Function} strip-unit - custom helper function
+/// @param {Number} $size - size in px or unitless
+/// @param {Number} $base-size - size in px - base for 1rem
+@function to-rem-util($size, $base-size) {
+   @if $size {
+      $size: strip-unit($size);
+      $base-size: strip-unit($base-size);
+      $result: math.div($size, $base-size);
+      @if $result == 0 {
+         @return string.unquote("0");
+      } @else {
+         @return $result * 1rem;
+      }
+   } @else {
+      @error "to-rem-util() Function: $size or $base-size is missing!";
+   }
+}

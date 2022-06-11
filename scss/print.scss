@@ -1,0 +1,10 @@
+/// This file builds a separate print stylesheet, if
+/// required in the main config, otherwise it stays empty.
+
+// ====================================================
+// ============================================= CONFIG
+@import "_utilities/load-config";
+
+@if not $include-print-styles {
+   @include print-stylesheet;
+}

@@ -1,0 +1,93 @@
+/// Use this file for code debugging purposes
+/// like testing mixins and functions, seeing
+/// color values or sizes...
+///
+/// For debugging your design use debug-design.scss
+/// **************************************************
+/// Don't forget to remove it in production...
+/// **************************************************
+@charset "UTF-8";
+
+// ====================================================
+// ============================================= CONFIG
+@import "_utilities/load-config";
+
+.colors {
+   /* stylelint-disable property-no-unknown */
+   primary-20: $color-primary-20;
+   primary-30: $color-primary-30;
+   primary-50: $color-primary-50;
+   primary-70: $color-primary-70;
+   primary-80: $color-primary-80;
+   /* - */
+   secondary-20: $color-secondary-20;
+   secondary-30: $color-secondary-30;
+   secondary-50: $color-secondary-50;
+   secondary-70: $color-secondary-70;
+   secondary-80: $color-secondary-80;
+   /* - */
+   accent-20: $color-accent-20;
+   accent-30: $color-accent-30;
+   accent-50: $color-accent-50;
+   accent-70: $color-accent-70;
+   accent-80: $color-accent-80;
+   /* - */
+   neutral-05: $color-neutral-05;
+   neutral-10: $color-neutral-10;
+   neutral-20: $color-neutral-20;
+   neutral-70: $color-neutral-70;
+   neutral-80: $color-neutral-80;
+   neutral-95: $color-neutral-95;
+   /* - */
+   white: $color-white;
+   black: $color-black;
+   /* stylelint-enable property-no-unknown */
+}
+
+.modular-scale {
+   @include ms(padding, xxxs m xxxxl);
+   @include ms(border-radius, xxs m l xxl);
+}
+
+.grid-scale {
+   @include gs(padding, xs xl);
+}
+
+.emq {
+   @include emq(min-xxs) {
+      color: #fff;
+   }
+
+   @include emq(xxs, ol, op, touch, hi-res, retina, min-h-768, "(test: test)", xxl) {
+      color: #fff;
+   }
+}
+
+.fluid-size {
+   @include fs(
+      margin-bottom,
+      100,
+      0.5rem,
+      1920px,
+      xxs);
+
+   @include no-js-style {
+      @include fs(
+         margin,
+         3rem,
+         1rem,
+         xxl,
+         xxs);
+   }
+}
+
+.font-family {
+   @include ff("Custom sans-serif", sans-serif);
+   @include ff("Custom serif", serif);
+   @include ff("Custom monospace", monospace);
+   @include ff("Custom cursive", cursive);
+   @include ff("Custom fantasy", fantasy);
+   @include a;
+   @include img($fluid: true, $balance: true);
+   @include img-overlay(before);
+}
