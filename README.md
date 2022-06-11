@@ -1,316 +1,288 @@
-# SCSS STARTER
-
----
-
-## TABLE OF CONTENTS
-
-- [GENERAL INFO](#general-info)
-- [FEATURES](#features)
-  - [General](#general)
-  - [Gulp](#gulp)
-  - [Wordpress](#wordpress)
-  - [Nunjucks](#nunjucks)
-  - [SCSS](#scss)
-  - [JavaScript](#javascript)
-  - [Images](#images)
-  - [SVG Sprites](#svg-sprites)
-  - [File Copy](#file-copy)
-- [USAGE](#usage)
-- [INSTALLATION](#installation)
-- [LICENSE](#license)
-- [COPYRIGHT](#copyright)
+# SASS STARTER PACKAGE
 
 ---
 
 ## GENERAL INFO
 
-> If you want to use this repository it is required that you're familiar with Gulp and Javascript.
-> It is also recommended that you're familiar with the node modules it uses.
+> You SCSS preprocessor should be configured to search for files in the sass source dir (example: project-root/src/sass), because all files use path relative to that dir, and not relative to them.
 >
-> If you're familiar with Gulp and JavaScript then it's very easy for you to add new modules or modify modules behaviour.
+> Mixins and functions rather throw errors, in case you don't keep an eye on the console. Therefore you should use something like gulp-plumber for Gulp, and some kind of notification to make you know there has been an error.
 >
-> Try not to modify any other but `config.js` files, unless you know what you are doing.
->
-> Configuration files (`config.js`) are commented for explanations, which should be fine for most people familiar with Gulp and JavaScript. Almost everything is configurable.
->
-> If you're developing with WordPress, you have to have a local WordPress site (with local server, like XAMPP) to proxy it with browsersync, because browsersync can't serve php. The settings for that are made automatically, just edit the project and wp config.
->
-> Use TODOs like: `TODO:` or `FIXME:` in an appropriate comment (ex: // TODO: change this), to get all todos and fixmes in a .txt file in the root dir.\
-> Read more at: <https://www.npmjs.com/package/gulp-todo>
+> There are examples in debug-code.scss. For making a theme or a particular page styles, there are also examples in their respective folders.
 
 ---
 
-## FEATURES
+## IDEA
 
-### General
+The idea is to keep this package as simple as possible, for easier usage, and still make it able to help. :)
 
-- :information_source: [easily add or remove modules](#addremove-a-module) (add your HTML processor instead of nunjucks)
-- develop a static page or with php/wordpress
-- option to proxy a domain (e.g. from local server), when working with php/wordpress
-- 'dev' and 'prod' mode: control developer headers for css and js, sourcemaps, js console logs, doiuse and todo logs
-- process Nunjucks (:information_source:), SCSS, JavaSript, images, minify and inline svg in css, create svg sprites
-- copy (to assets) files that don't have to be processed, e.g. fonts, sounds... so all source files can be in one place
-- sourcemaps for SCSS and JS
-- create [humans.txt](https://humanstxt.org/) file
-- :information_source: :information_source: notification on plugin errors (so you don't have to keep the console open)
-- sound on task completion (so you don't have to keep the console open)
+I didn't want to make a framework that it takes time to learn it, and which contains hundreds of unused classes (I do use [purgecss](https://www.npmjs.com/package/@fullhuman/postcss-purgecss), but still...).
 
-> :information_source: It is easy to add your HTML preprocessor, see [Add your HTML preprocessor in three steps](#add-your-html-preprocessor-in-three-steps)
->
-> :information_source: :information_source: Windows 10 Note:\
-> You might have to activate banner notification for the toast to show. You can make it work by going to System > Notifications & Actions. The 'toast' app needs to have Banners enabled. (You can activate banners by clicking on the 'toast' app and setting the 'Show notification banners' to On)
+Instead it provides some basic, but still usefull things, and everyone can add what they need - that way it makes it simpler for everyone to use it.
 
-### Gulp
-
-- watch for file changes and run the appropriate task on each file change (save, delete, new file)
-- restart gulp on any config change and apply new settings
-- tasks don't break on plugin errors ([gulp-plumber](https://www.npmjs.com/package/gulp-plumber))
-- web server with streaming CSS files on change, and reloading page on HTML and JS change, proxying a domain with php/wordpress
-
-### Wordpress
-
-- :information_source: unzip automatically [underscores theme template](https://underscores.me)
-- :information_source: :information_source: replace placeholder slug and text-domain automatically, in all files, if using a placeholder theme
-- theme is initialised automatically - directory, index.php, screenshot placeholder and style.css
-- copy files to the destination on any file change
-- :warning: concatenate files
-- populate all TODOs and FIXMEs from .php files into LOG-TODO-WP.txt, in the project root
-- update [humans.txt](https://humanstxt.org/) on each build
-
-> This may look like an ordinary duplication of files, but I believe it's better to keep all source files in one place. This way you can zip the theme without anything that does not belong there.\
-> Another good thing is concatenating files, where you can have numerous small, well documented files in one folder, add or remove them and have them all concatenated into one file in the destination, like functions.php.
->
-> :information_source: If you want to use underscores starter theme, then download it first, place it into the wordpress source dir, make all required configurations, and then run gulp. It will be unzipped and all config done automatically.
->
-> :information_source: :information_source: Placeholder theme would be a theme that is created once, and used for all projects, with some particular name, which is used as theme slug and text domain placeholder which is easy to replace whithout errors.\
-> It is always a good idea to download a new starter theme for each new project, because they maintain (update) it.
->
-> :warning: **Concatenation removes all occurences of `<?php` and `?>` from each file. They will be prepended/appended to each produced file, which makes this option useful only for files that contain only php code.**
->
-> If you have many functions or filters in functions.php, which may also be documented (// commented) for usage, configuration, source info, potential issues etc., then you can get a very long file, which is difficult to manage.\
-> That is the reason for this option, which at first looks usless with PHP.\
-> This way you can split code in smaller files (which you just add or remove from the folder) and concatenate them, to avoid unneccessary server side includes.
-
-### Nunjucks
-
-- configure global variables and filters for usage in .njk files
-- format output HTML
-- change output file extension
-- a TODO file (.txt) with all todos and fixmes in the project's root folder
-- [Humans.txt](https://humanstxt.org/) is being updated on each build
-
-> :warning: Always build html before publishing it and after having finished bulding CSS and Javascript, to update their cachebust in HTML (e.g. src:"/main.js?20211010212110").
->
-> :information_source: Activating watcher for this (JSON) file is probably not a good idea, because it would build HTML on any change in JavaScript and SCSS files.
->
-> :information_source: It is easy to add your HTML preprocessor, see [Add your HTML preprocessor in three steps](#add-your-html-preprocessor-in-three-steps)
-
-### SCSS
-
-- clean output folder (delete all built files) before every build
-- [sourcemaps](https://www.npmjs.com/package/gulp-sourcemaps)
-- choose what comments to keep
-- prefix CSS with [autoprefixer](https://www.npmjs.com/package/autoprefixer)
-- target browsers configuration for [autoprefixer](https://www.npmjs.com/package/autoprefixer) and [doiuse](https://www.npmjs.com/package/doiuse)
-- :warning: remove unused selectors from CSS ([purgeCss](https://www.npmjs.com/package/gulp-purgecss))
-- get removed selectors from CSS in a .rejected.css ([purgeCss](https://www.npmjs.com/package/gulp-purgecss))
-- group media queries in CSS, depending on your design way (mobile/desktop first)
-- [fix flex bugs](https://github.com/philipwalton/flexbugs)
-- [minify and inline svg files](https://www.npmjs.com/package/postcss-inline-svg)
-- [doiuse](https://www.npmjs.com/package/doiuse) .txt file in the root, with CSS features that are not supported by certain browsers
-- format CSS
-- minify with CSSO
-- cachebusting (JSON file for usage with HTML processor)
-- a TODO file (.txt) with all todos and fixmes in the project's root folder
-- add developer or license info at the top of CSS files (in 'prod' environment)
-- [humans.txt](https://humanstxt.org/) is being updated on each build
-
-> :warning: If the CSS does not work, check purgeCSS rejected file, to see if the selector has been removed. It happens with selectors dinamically created with Javascript - e.g. element.classlist.add(someVar + '--some-modifier'). Such selectors [purgeCss](https://www.npmjs.com/package/gulp-purgecss) can't see. Use SCSS config to add selectors that should always be kept.
-
-### JavaScript
-
-- clean output folder (delete all built files) before every build
-- multiple bundles can be created, with multiple transpilations for each (target browsers configuration for babel)
-- choose what comments to keep in minified files, for each bundle
-- different output folder can be set for each bundle
-- [sourcemaps](https://www.npmjs.com/package/gulp-sourcemaps)
-- cachebusting (JSON file for usage with HTML processor)
-- minification with [gulp-uglify](https://www.npmjs.com/package/gulp-uglify)
-- console logs are being removed from the code during minification, in 'prod' environment
-- a TODO file (.txt) with all todos and fixmes in the project's root folder
-- add developer or license info at the top of JS bundles, in 'prod' environment
-- [humans.txt](https://humanstxt.org/) is being updated on each build
-
-### Images
-
-- clean output folder (delete all built files) before every build
-- keep or remove metadata
-- :information_source: blurred placeholder SVG, base64 encoded, placed in scss maps, in separate files for large and small placeholders
-- create different image sizes (from one image)
-- compress and/or crop images (jpg, png, webp, svg)
-- [humans.txt](https://humanstxt.org/) is being updated on each build
-
-> :information_source: Read more about SVG placeholders at [css-tricks](https://css-tricks.com/the-blur-up-technique-for-loading-background-images)
-
-### SVG Sprites
-
-- set folders whose content (SVG files) will be merged into a 'sprite'
-- create multiple sprites, with different options for each
-- minify SVGs
-- option to keep/remove doctype
-- prefixed IDs are automatically generated by sprite name, dir and filename, so files with same filenames (in different directories) are possible, IDs will stil be unique
-
-> :information_source: Inline SVGs in browser, not with Gulp, because of caching.
->
-> :information_source: Read more about SVG sprites at [css-tricks](https://css-tricks.com/svg-symbol-good-choice-icons/)
-
-### File Copy
-
-- clean output folders before every copy
-- set array of folders in the 'src' folder to copy files without processing them
+For those who use VSCode, there are snippets that also contain explanations for mixins. You can type "scss-starter" and your autocomplete should list all available mixins (or just look into the snippets file).
 
 ---
 
 ## USAGE
 
-> **Default config should be good for most users. To start, project config and source files/folders (config.js file) for each module have to be configured.**
+- Use config for everything. First define options, and then below, use them to define components. Then use these variables in the components/modules/layout.
+- Create components/modules/layout in the "main" folder, and include in them their "placeholders" from "utilities/design", if they have one. If not, make one. ;)
+- Use mixin-tools (listed below) for faster and consistent design.
+- Use the debug css in html, and control it in config (don't forget to remove it in production).
+
+> For creating a theme/page, see readme file in their folders.
+
+---
+
+## FEATURES
+
+### Debugging
+
+- Debug code (debug-code.scss): test mixins and functions, see the code they produce (i.e. color values, sizes from modular scale etc.).
+- Debug design (debug-design.scss):
+  - [Display baseline grid](https://basehold.it/) on the page,
+  - [Display active breakpoint](https://github.com/sass-mq/sass-mq#seeing-the-currently-active-breakpoint)
+  - [Use pesticide](https://github.com/mrmrs/pesticide).
+
+> These create separate css files, don't forget to remove them in production.
+
+### Design
+
+- Choose your design approach (mobile/desktop first) for media-queries.
+- [Create more "natural" color tints and shades](https://learnui.design/blog/color-in-ui-design-a-practical-framework.html). Also create "tinted" neutrals.
+- All media-queries will respect your design approach :information_source:
+- Use [modular scale](https://www.modularscale.com/)
+- Use [baseline grid](https://material.io/design/layout/spacing-methods.html)
+- Use system fonts on mobile devices (prevent downloading fonts to save bandwidth)
+- [Make any size fluid](https://www.madebymike.com.au/writing/precise-control-responsive-typography/) - based on the screen width. Three methods and an optional fallback.
+- Create easily media-queries with EMQ (uses [sass-mq](https://github.com/sass-mq/sass-mq))
+- Easier links (use config to style them)
+  - automatically created states,
+  - a "wrapper link" (see [getbootstrap.com](https://getbootstrap.com/docs/4.3/utilities/stretched-link/) and [stackoverflow.com](https://stackoverflow.com/questions/796087/make-a-div-into-a-link)),
+  - a class to increase the link's size on smaller screens.
+- Image balancing (kind of "equalise" them - make them look more similar) with a filter and an overlay
+- ["Style" images when they fail to load](https://bitsofco.de/styling-broken-images/).
+- Create easily a theme or a particular page design.
+- Easier ".no-js" styles
+- Units are converted to rems (see config for all "less important" options).
+- VS Code snippets for mixins included
+
+> :information_source: System UI font family is always mobile-first, to prevent some browsers from downloading unneccessary fonts on mobile.
+
+### Print Stylesheet
+
+- Either include the print stylesheet in the main file, or make it separately (use config).
+
+---
+
+## FOLDERS
+
+- config - contains all the settings for the design/development
+- utilities - contains all the tools
+  - debug - design/development debugging tools
+  - design - a kind of placeholders - mixins to use in the design - this is where you can drop-in new ones and update the existing
+  - helpers - helper functions/mixins for other functions/mixins, not used directly in the design, generally should not be modified
+- main - all the files for the design/development
+- pages - styles for a particular page
+- themes - styles for a different theme
+
+> There are also some SCSS snippets in the ".snippets" dir, that migh be useful. I didn't want to implement them to "keep it simple".
+
+---
+
+## FILES
+
+- debug-code.scss - test your code, not for production
+- debug-design.scss - test your design, not for production
+- main.scss - main sylesheet
+- print.scss - depending on the config, a separate print stylesheet
+
+> There are also examples in pages and themes folders.
+
+---
+
+## USEFUL MIXINS
+
+> For more info on using these mixins, see their files in the "utilities" folder.
 >
-> Configuration files (`config.js`) are commented for explanations, which should be fine for people familiar with Gulp and JavaScript.
+> Use the debug files if you want to see what each mixin produces. Sometimes there can be a substantial amount of code (e.g. media-queries), which might be done better another way. You might consider using custom properties for system ui fonts for not to print them all over the code.
 
-1. Use project config:
+### [Modular Scale](https://www.modularscale.com/)
 
-   - Set basic project info in `config-project.js`
-   - Set development environment in `config.build.env: 'dev'`
-   - Set design type in `config.build.type`, static or wordpress - this configures the server and assets folder/links
-   - set main folder names (not path) in `config.dirname`
-   - set source directories (path) in `const dirs`
-   - set specific files (cachebust, img placeholders) in `const files` (path)
+Just define a scale ratio and use:
 
-2. Configure each module's config in its configuration file.
+`@include ms( <css-property>, <values from the map, shorthand syntax>... );`
 
-3. The `gulpfile.js` file is already set:
+mixin ("ms" for modular scale) on anything, to apply sizes from the scale.
 
-   ```javascript
-   const gwsb = require('./gulp-wsb');
-   exports.default = gwsb.run;
-   ```
+Option to add two scales - one with a smaller ratio for smaller screens (recommended).
 
-That's all.
+It prints media-queries automatically. Can be combined with the baseline grid.
 
-If you are using underscores theme, place its zip file in the wp source dir for it to be unzipped automatically.\
-Now just navigate in your console to your project folder and type 'gulp'.
+> `<values from the map, shorthand syntax>` also means there are no commas.
+>
+> Example: `@include ms(margin, xxs s l);`
+>
+> *VS Code snippet triggers: "ms, modular-scale, include, mixin, scss-starter"*
 
-On every config change the gulp process will restart and apply the new config.
+### [Baseline Grid](https://material.io/design/layout/spacing-methods.html)
 
-If you rename the `gulp-wsb` folder, just rename it in `gulpfile.js` as well.
+Define your sizes and then just use:
 
-All found modules are imported automatically. The missing ones will not cause error, only will display an info in console, that the module was not found.
+`@include gs( <css-property>, <values from the map, shorthand syntax>... );`
 
-Each module has a README with usage information.
+mixin ("gs" for grid scale) on everything.
+
+Can be combined with modular scale.
+
+> `<values from the map, shorthand syntax>` also means there are no commas.
+>
+> Example: `@include gs(margin, xxs s l);`
+>
+> *VS Code snippet triggers: "gs, grid-scale, baseline-grid, include, mixin, scss-starter"*
+
+### Font Family
+
+Use system fonts on mobile devices (recommended) to prevent browsers from downloading fonts, to reduce bandwidth:
+
+`@include ff( custom-font-family-variable );`.
+
+> *VS Code snippet triggers: "ff, font-family, system-ui-font, small-screen-font, include, mixin, scss-starter"*
+
+### [Fluid Size](https://www.madebymike.com.au/writing/precise-control-responsive-typography/)
+
+Make any size fluid - width, height, margin, padding, font-size, border-radius.
+
+- Three optional "fluid size" methods, optional fallback
+- If using calc() method, it can produce media-queries to limit the sizing
+- If fluid size is not enabled, returns only the $max-size value
+
+Use:
+
+`@include fs( <css-property>, <max-size>, <min-size>, <max-breakpoint>, <min-breakpoint> );`
+
+> *VS Code snippet triggers: "fs, fluid-size, include, mixin, scss-starter"*
+
+### EMQ - Easier [Sass-mq](https://github.com/sass-mq/sass-mq)
+
+Define your breakpoints and other queries an just use them (keys from these maps, quoted/unquoted, comma separated):
+
+`@include emq( <bp=1>, <query-1>, <bp-2>, <query-2>, "(custom:query)"... ) { // styles here }`
+
+It just makes easier usage of the original [sass-mq](https://github.com/sass-mq/sass-mq), which is included in the same folder.
+
+> When you use two breakpoints, the first found breakpoint is always "min-width" and the second "max-width", regardless of the design approach. Other than that, the order of queries does not matter.
+>
+> *VS Code snippet triggers: "emq, mq, media-query, include, mixin, scss-starter"*
+
+### No-JS
+
+Apply styles when the JavaScript is disabled:
+
+`@include no-js-styles { // styles here }`.
+
+> *VS Code snippet triggers: "no-js, js, include, mixin, scss-starter"*
+
+---
+
+Mixins ("placeholders") to be used for components:
+
+---
+
+### A
+
+Mixin to create links - use config to style it.
+
+Use:
+
+`@include a;`.
+
+It adds automatically:
+
+- States (hover, focus, active, visited) - only those styled in config
+- Bem-style class (`<main-class>--wrapper`) for a "wrapper" link - see [getbootstrap.com](https://getbootstrap.com/docs/4.3/utilities/stretched-link/) and [stackoverflow.com](https://stackoverflow.com/questions/796087/make-a-div-into-a-link) :information_source:
+- Bem-style class (`<main-class>--increased`) in a media-query, and a modernizr class (`.touchevents <main-class>--increased`) to increase the link's surface on smaller/touch screens. :information_source:
+
+> :information_source: Classes will not work if you use it in `<a>` tag, only in a class or id.
+>
+> *VS Code snippet triggers: "a, link, include, mixin, scss-starter"*
+
+### IMG
+
+Use in images:
+
+`@include img($fluid: true, $balance: true) { // styles here }`.
+
+- Balance images (css filter in config)
+- ["Style" them when they fail to load](https://bitsofco.de/styling-broken-images/) :information_source:
+- Add an image overlay on its parent, for image balancing (also in config) :information_source: :information_source:
+
+> :information_source: Unsupported on: Opera Mini, Safari (Desktop and iOS), iOS Webview (Chrome, Firefox, others)
+>
+> :information_source: :information_source: Creates `<main-class>--img-overlay::before` and its hover
+
+---
+
+> *VS Code snippet triggers (image): "img, image, include, mixin, scss-starter"*
+>
+> *VS Code snippet triggers (overlay): "img, overlay, include, mixin, scss-starter"*
+
+---
+
+## ALL AVAILABLE MIXINS
+
+### "Placeholder" Mixins
+
+Just include mixins with the name of the html tag they are being used on. For example, if you create a link component, name the selector for example ".link", and `@include a;` mixin (for html `<a>` tag).
+
+- `@include a` - links
+- `@include body` - body tag
+- `@include hr` - horizontal rule
+- `@include img` - images
+- `@include ol` - ordered lists
+- `@include ul` - unordered lists
+- `@include p` - paragraphs
+- `@include root` - :root (html tag)
+- `@include block` - "general" block level elements, like: div, article, section etc.
+- `@include heading` - the common "headings" style
+- `@include pseudo` - make pseudo-elements
+  - pseudo-before, pseudo-after, pseudos: basic pseudo-element insertion
+  - pseudo-before-stretched, pseudo-after-stretched, pseudos-stretched: full width/height pseudo-elements
+- `@include vr` - "vertical rule" - a kind of a vertical separator
+
+### Helper Mixins
+
+- `@include ms` - modular scale - apply a [modular scale](https://www.modularscale.com/) to the design, including media-queries for different (smaller) ratio on smaller screens, respecting your design approach - mobile/desktop first
+- `@include gs` - grid scale - apply a grid scale to the design - so that everything fits into the [baseline grid](https://material.io/design/layout/spacing-methods.html)
+- `@include fs` - fluid size - make anything fluid size, using three optional methods and a fallback, and limit min/max size - based on: [madebymike.com.au](https://www.madebymike.com.au/writing/precise-control-responsive-typography/) and [websemantics.uk](https://websemantics.uk/tools/responsive-font-calculator/)
+- `@include ff` - font-family - option to use system ui font on mobile, to reduce bandwidth
+- `@include center` - center absolutely positioned element, horizontally / vertically / both
+- `@include emq` - easier-sass-mq - simplifies usage of sass-mq
+- `@include mq` - [sass-mq](https://github.com/sass-mq/sass-mq) - easy media-queries - **you can use emq, which makes easier usage of the sass-mq**.
+- `@include no-js-style` - apply styles when browser does not have JavaScript enabled
+- `@include sr-only` - content which should be visually hidden, but remain accessible to assistive technologies (e.g. "skip" links)
 
 ---
 
 ## INSTALLATION
 
-> :warning: If adding a new plugin in the pipeline, if you're using Sourcemaps, the new plugin has to be [compatible with gulp-sourcemaps](https://github.com/gulp-sourcemaps/gulp-sourcemaps/wiki/Plugins-with-gulp-sourcemaps-support).
+Copy "scss" folder to your project's "source" dir.
 
-Place this repository in your project root directory. File/folder structure should be like this (with default config):
-
-- .git
-- .vscode
-- htdocs (or public_html etc., depending on your config, will be created and named from the config)
-  - assets
-  - humans.txt
-  - ... (other files/folders)
-- **gulp-wsb <==============**
-  - build-modules
-  - common-fn
-  - index.js
-  - project-config.js
-- node_modules
-- src
-  - img
-  - js
-  - nunjucks
-  - scss
-  - ... (other files/folders)
-- gulpfile.js
-- LICENSE
-- package.json
-- package-lock.json
-- README.md
-
-### Gulp-cli has to be installed globally
-
-```cmd
-npm install --global gulp-cli
-```
-
-### General Node Modules
-
-```cmd
-npm install --save-dev gulp gulp-plumber adm-zip del gulp-rename gulp-sourcemaps gulp-concat gulp-if gulp-header gulp-todo merge2 sharp browser-sync gulp-notify
-```
-
-### All other Node Modules
-
-```cmd
-npm install --save-dev gulp-nunjucks-render gulp-jsbeautifier sass gulp-sass gulp-postcss postcss-flexbugs-fixes postcss-inline-svg postcss-svgo autoprefixer postcss-discard-comments postcss-sort-media-queries doiuse postcss-csso @fullhuman/postcss-purgecss gulp-purgecss gulp-babel @babel/core @babel/preset-env gulp-strip-debug gulp-uglify gulp-svgmin gulp-svgstore
-```
-
-> :information_source: It's understood that you navigate in your console where you want to install node_modules.
->
-> Each module's README file contains all node modules required for it.
-
-### Add/remove a gulp-wsb module
-
-It is possible to remove modules that are not required (just delete the folder).
-
-It is also possible to add your own module for a specific language:
-
-- Create a folder in "build-modules" folder (name it by the language/technology)
-- Use existing files from other modules as an example for how to create config and index files
-- Include this new module in the main `index.js` file (next to `project-config.js`), in the 'M O D U L E S' section (search for 'ADD ALL MODULES HERE'), and create a watcher, if required.
-
-### Add your HTML preprocessor in three steps
-
-1. Create a new module (by copying the existing nunjucks module) and rename it
-2. Require your preprosessor at the top of the `index.js` file, in:
-   "const htmlProcessor = require('gulp-nunjucks-render');"
-3. In `config.js` file: remove "const manageEnvironment" and modify "const config" object
+> You SCSS preprocessor should be configured to search for files in the sass source dir (example: project-root/src/sass), because all files use path relative to that dir, and not relative to them.
 
 ---
 
 ## LICENSE
 
-GNU GENERAL PUBLIC LICENSE V3.0
+### MIT LICENSE
 
-Permissions of this strong copyleft license are conditioned on making available complete source code of licensed works and modifications, which include larger works using a licensed work, under the same license. Copyright and license notices must be preserved. Contributors provide an express grant of patent rights.
+Copyright © 2022 [Igor Vračar](https://www.igorvracar.com)
 
-Permissions:
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
-- Commercial use
-- Modification
-- Distribution
-- Patent use
-- Private use
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
-Limitations:
-
-- No Liability
-- No Warranty
-
-Conditions:
-
-- License and copyright notice
-- State changes
-- Disclose source
-- Same license
-
----
-
-## COPYRIGHT
-
-## **© 2022 [Igor Vračar](https://www.igorvracar.com)**
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ---
