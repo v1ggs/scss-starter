@@ -1,0 +1,310 @@
+/// Base styles: html, body, target, selection...
+
+/// Required sass modules
+@use "sass:math";
+@use "sass:list";
+@use "sass:map";
+
+// Base configuration: set anything to false to remove it,
+// don't delete top-level keys (html, body, body-inner...).
+// If using comma-separated list (like font-family)
+// put it in parentheses.
+$base-config: (
+   // Html tag settings
+   html: (
+      overflow-x: hidden,
+      overflow-y: false,
+   ),
+   body: (
+      // don't use "page" class if you work with wordpress,
+      // it sets class "page" for pages - REQUIRED !!!
+      class-name: body,
+      background-color: white,
+      font-size: 1rem,
+      font-family: ("Arial", sans-serif),
+      font-weight: 400,
+      line-height: 1.5,
+      color: black,
+      text-rendering: optimizelegibility,
+   ),
+   body-inner: (
+      // __bem style suffix: REQUIRED !!!
+      class-suffix: inner,
+      width: 100%,
+      max-width: 992px,
+      margin: 0 auto,
+      background-color: green,
+   ),
+   // ::selection and :target
+   // Allowable properties (::selection): background-color,
+   // color, text-decoration, text-shadow, stroke-color,
+   // fill-color, stroke-width
+   text-selection: (
+      color: white,
+      background-color: black,
+   ),
+   // Css variables: list them
+   // here WITHOUT leading "--"
+   custom-properties: (
+      property: false,
+   ),
+) !default;
+
+// ====================================================
+// ====================================================
+$html-settings: map.get($base-config, html);
+$smooth-scroll: true !default;
+$base-font-size: 16px !default;
+$body-settings: map.get($base-config, body);
+$body-inner-settings: map.get($base-config, body-inner);
+$text-selection-settings: map.get($base-config, text-selection);
+$custom-properties-settings: map.get($base-config, custom-properties);
+
+// The :root CSS pseudo-class matches the root element of a tree
+// representing the document.
+// It represents the <html> element and is identical to the selector html,
+// except that its specificity is higher.
+// It can be useful for declaring global CSS variables.
+:root {
+   box-sizing: border-box;
+   display: block;
+   margin: 0;
+   padding: 0;
+   border: 0;
+   min-height: 100vh;
+   font-size: math.div($base-font-size, 16px) * 100%;
+
+   @each $property, $value in $html-settings {
+      @if $property != "property" and $value {
+         #{$property}: $value;
+      }
+   }
+
+   @if $smooth-scroll {
+      @if map.has-key($emq-features, no-reduced-motion) {
+         @include emq(no-reduced-motion) {
+            scroll-behavior: smooth;
+         }
+      } @else {
+         @error "root: No 'no-reduced-motion' media-query defined in $emq-features...";
+      }
+   }
+
+   @if $custom-properties-settings {
+      @each $property, $value in $custom-properties-settings {
+         @if $property != "property" and $value {
+
+            // stylelint-disable-next-line custom-property-pattern
+            --#{$property}: #{$value};
+         }
+      }
+   }
+}
+
+/// ====================================================
+
+// BODY SELECTOR
+.#{map.get($body-settings, class-name)} {
+   @include box-sizing;
+   display: block;
+   width: 100%;
+   margin: 0;
+   padding: 0;
+   border: 0;
+   text-align: left;
+   -webkit-tap-highlight-color: rgba(black, 0); // 1
+   -webkit-text-size-adjust: 100%; // 2
+
+   @each $property, $value in $body-settings {
+      @if $value and $property != "property" and #{$property} != "class-name" and #{$property} != "class-suffix" {
+         @if #{$property} == font-family {
+            @include ff($value);
+         } @else {
+            #{$property}: $value;
+         }
+      }
+   }
+
+   @if $body-inner-settings {
+      // BODY INNER SELECTOR
+      &__#{map.get($body-inner-settings, class-suffix)} {
+         @each $property, $value in $body-inner-settings {
+            @if $value and $property != "property" and #{$property} != "class-name" and #{$property} != "class-suffix" {
+               @if #{$property} == font-family {
+                  @include ff($value);
+               } @else {
+                  #{$property}: $value;
+               }
+            }
+         }
+      }
+   }
+}
+
+// 1) -webkit-tap-highlight-color
+// Change the default tap highlight to be completely transparent in iOS
+// Inherited
+
+// 2) -webkit-text-size-adjust
+// Bootstrap:
+// Prevent adjustments of font size after orientation changes in iOS.
+///
+// https://developer.mozilla.org/en-US/docs/Web/CSS/text-size-adjust
+// The text-size-adjust CSS property controls the text inflation algorithm used on some smartphones and tablets.
+// Other browsers will ignore this property.
+// ...
+// Because many websites have not been developed with small devices in mind,
+// mobile browsers differ from desktop browsers in the way they render web pages.
+// Instead of laying out pages at the width of the device screen,
+// they lay them out using a viewport that is much wider, usually 800 or 1000 pixels.
+// To map the extra-wide layout back to the original device size,
+// they either show only part of the whole render or scale the viewport down to fit.
+///
+// Since text that has been scaled down to fit a mobile screen may be very small,
+// many mobile browsers apply a text inflation algorithm to enlarge the text
+// to make it more readable.
+// When an element containing text uses 100% of the screen's width,
+// the algorithm increases its text size, but without modifying the layout.
+// The text-size-adjust property allows web authors to disable or modify this behavior,
+// as web pages designed with small screens in mind do not need it.
+// ...
+// As hinted at above, on a properly designed responsive site the text-size-adjust behavior is not needed,
+// so developers can elect to turn it off by specifying a value of none.
+
+/// text-rendering
+/// auto | optimizeSpeed | optimizeLegibility | geometricPrecision | inherit | initial | revert | revert-layer | unset
+/// @link https://developer.mozilla.org/en-US/docs/Web/CSS/text-rendering
+/// The text-rendering CSS property provides information to the rendering
+/// engine about what to optimize for when rendering text.
+/// The browser makes trade-offs among speed, legibility,
+/// and geometric precision.
+/// Note: The text-rendering property is an SVG property that is not defined
+/// in any CSS standard. However, Gecko and WebKit browsers let you apply
+/// this property to HTML and XML content on Windows, macOS, and Linux.
+/// One very visible effect is optimizeLegibility, which enables ligatures
+/// (ff, fi, fl, etc.) in text smaller than 20px for some fonts (for example,
+/// Microsoft's Calibri, Candara, Constantia, and Corbel, or the DejaVu font family).
+
+/// ====================================================
+
+@if $text-selection-settings and
+   list.length($text-selection-settings) > 0 {
+   /// @link https://developer.mozilla.org/en-US/docs/Web/CSS/::selection
+   /// The ::selection CSS pseudo-element applies styles to the part of
+   /// a document that has been highlighted by the user (such as clicking
+   /// and dragging the mouse across text).
+   ///
+   /// Accessibility concerns
+   /// Don't override selected text styles for purely aesthetic
+   /// reasons — users can customize them to suit their needs.
+   /// For people experiencing cognitive concerns or who are less
+   /// technologically literate, unexpected changes to selection
+   /// styles may hurt their understanding of the functionality.
+   ///
+   /// If overridden, it is important to ensure that the contrast
+   /// ratio between the text and background colors of the
+   /// selection is high enough that people experiencing
+   /// low vision conditions can read it.
+   ///
+   /// Allowable properties:
+   // stroke-color: #ffffff !default;
+   // fill-color: #ffffff !default;
+   // stroke-width: 1px !default;
+   // text-shadow: none !default;
+   // text-decoration: none !default;
+   ::selection {
+      @each $property, $value in $text-selection-settings {
+         @if $property != "property" and $value {
+            #{$property}: $value;
+         }
+      }
+   }
+
+   @keyframes link-target-pointer {
+      from {
+         transform: translate(-50%, -130%);
+         box-shadow: 0 4rem 1rem -2rem neutral(95%, $color-primary-base);
+      }
+
+      to {
+         transform: translate(-50%, -110%);
+         box-shadow: 0 2rem 1rem -1rem neutral(95%, $color-primary-base);
+      }
+   }
+
+   /// @link https://developer.mozilla.org/en-US/docs/Web/CSS/:target
+   /// The :target CSS pseudo-class represents a unique element
+   /// (the target element) with an id matching the URL's fragment.
+   /// For example, the following URL has a fragment (denoted by the # sign)
+   /// that points to an element called section2:
+   /// http://www.example.com/index.html#section2
+   /// The :target pseudo-class can be used to highlight the portion of a page
+   /// that has been linked to from a table of contents.
+   :target:not(#main-content) {
+      position: relative !important;
+      outline: 0 !important;
+      @each $property, $value in $text-selection-settings {
+         @if $property != "property" and $value {
+            #{$property}: $value;
+         }
+      }
+
+      &::before {
+         @if map.has-key($text-selection-settings, color) {
+            color: map.get($text-selection-settings, color);
+         }
+         @if map.has-key($text-selection-settings, background-color) {
+            background-color: map.get($text-selection-settings, background-color);
+         }
+         position: absolute !important;
+         display: block;
+         text-align: center;
+         content: "\21e9";
+         top: 0;
+         left: 50%;
+         width: 1.6em;
+         height: 1.6em;
+         font-size: 2rem;
+         border-radius: 50%;
+         pointer-events: none;
+         opacity: 1;
+         transition: opacity 0.2s;
+         animation: link-target-pointer alternate infinite 0.8s ease-in-out;
+      }
+
+      &:hover::before {
+         opacity: 0;
+      }
+   }
+
+   /// @link https://developer.mozilla.org/en-US/docs/Web/CSS/:target#pure-css_lightbox
+   /// Pure-CSS lightbox
+   /// You can use the :target pseudo-class to create a lightbox without
+   /// using any JavaScript. This technique relies on the ability of anchor
+   /// links to point to elements that are initially hidden on the page.
+   /// Once targeted, the CSS changes their display so that they are shown.
+}
+
+/// ====================================================
+
+// asterisk selector for box-sizing, if not using BEM
+@include box-sizing-universal;
+
+/// ====================================================
+
+// media query to disable animations if reduced motion preferred
+/// @link https://css-tricks.com/revisiting-prefers-reduced-motion/
+/// This code will work when a person has requested a reduced motion experience,
+/// or the device has a screen with a slow refresh rate (update: slow),
+/// say e-ink or a cheap smartphone.
+@media screen and (prefers-reduced-motion: reduce), (update: slow) {
+   * {
+      animation-duration: 0.001ms !important;
+      transition-duration: 0.001ms !important;
+
+      // https://css-tricks.com/revisiting-prefers-reduced-motion-the-reduced-motion-media-query/#comment-1700170
+      animation-iteration-count: 1 !important;
+   }
+}
+
+/// ====================================================
