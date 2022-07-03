@@ -1,3 +1,14 @@
-.body {
-   background-image: $body-background-image;
+@use "sass:map";
+
+// SELECTOR
+.#{map.get($body-settings, class-name)} {
+   @each $property, $value in $body-settings {
+      @if $value and $property != "property" and #{$property} != "class-name" and #{$property} != "class-suffix" {
+         @if #{$property} == font-family {
+            @include ff($value);
+         } @else {
+            #{$property}: $value;
+         }
+      }
+   }
 }
