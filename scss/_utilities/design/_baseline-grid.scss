@@ -4,17 +4,45 @@
 @use "sass:list";
 @use "sass:string";
 
-/// Use this mixin in your code to get a proper size from
+/// required for the mixin,
+/// override with the config's main variable
+/// options: { "mobile-first" | "desktop-first" }
+$baseline-grid-approach: "mobile-first" !default;
+
+/// baseline grid base (if you use it, everything
+/// on page should fit into this grid)
+$baseline-grid-base: 4px !default;
+
+// line height for display text
+// it will be programmatically encreased for smaller fonts
+$baseline-grid-line-height: 1.4 !default;
+
+// line height gets larger for smaller font-sizes
+// this controls how fast it grows, from 0 - no upper limit
+$baseline-grid-line-height-increment-strenght: 1 !default;
+
+/// Used if you combine it with modular scale
+/// and use two ratios, one for desktop, one for mobile
+/// this is a breakpoint where you start using
+/// another "grid scale"
+/// USE A KEY FROM YOUR BREAKPOINTS MAP
+$baseline-grid-critical-breakpoint: "m" !default;
+
+/// wether or not you use two modular scale ratios
+$baseline-grid-double-scale: true !default;
+
+/// Use the mixin in your code to get a proper size from
 /// $baseline-grid-scale map, from xxxxs to xxxxl
 /// @example
 ///   @include gs(padding, xs xl);
 ///   // will return, for example:
 ///      padding: 0.5rem 1.5rem;
 ///
-/// you can combine it with modular scale, which can be used for
-/// font-size, and the baseline grid for line heights and spacing
-/// modify $baseline-grid-scale map to fit your needs
-$baseline-grid-scale: (
+/// It can be combined with modular scale, which can
+/// be used for font-size, and the baseline grid for
+/// line heights and spacings. Set it manually or use
+/// auto-grid() function, if you use modular scale.
+$baseline-grid-scale-default: (
    xxxxl: 60px,
    xxxl: 48px,
    xxl: 32px,
@@ -28,19 +56,144 @@ $baseline-grid-scale: (
    xxxxs: 1px,
 ) !default;
 
+// Use only if you combine it with modular scale and use two
+// ratios, one for desktop, one for mobile. Set it manually
+// or use auto-grid() function, if you use modular scale.
+$baseline-grid-scale-mobile: (
+   xxxxl: 60px,
+   xxxl: 48px,
+   xxl: 32px,
+   xl: 24px,
+   l: 20px,
+   m: 16px, // default
+   s: 12px,
+   xs: 8px,
+   xxs: 4px,
+   xxxs: 2px,
+   xxxxs: 1px,
+) !default;
+
+/// Helper function: Check if a number does not fit
+/// to the baseline grid (does not fit == true)
+@function does-not-fit-to-grid($number) {
+   $new-value: math.div($number, $baseline-grid-base);
+   $new-value-rounded: math.round($new-value);
+
+   @if $new-value == $new-value-rounded {
+      @return false;
+   } @else {
+      @return true;
+   }
+}
+
+/// Auto-grid-scale function: create a baseline
+/// grid map(s) based on the modular scale map(s)
+/// @author vIGGS
+/// @param {Number} $ratio - modular scale ratio (mobile/desktop)
+/// @return {Map} - baseline grid map
+@function auto-grid($ratio) {
+   $new-map: ();
+   $current-value: false;
+   $previous-value: false;
+   $current-key: false;
+   $skipped-keys: ();
+   $line-height: $baseline-grid-line-height;
+   $line-height-increment: math.sqrt(
+      math.div($baseline-grid-line-height-increment-strenght, 5000)
+   );
+
+   @each $key, $value in $modular-scale {
+      $scale: map.get($modular-scale, $key);
+      $size: math.ceil(
+         ms-scale-debug($ratio, $scale) * $line-height
+      );
+
+      // decrement until it fits to grid
+      @while does-not-fit-to-grid($size) {
+         $size: $size - 1;
+      }
+
+      $current-value: $size;
+
+      // don't create multiple keys with the same
+      // value, just add the key to the skipped list
+      @if $current-value != $previous-value and
+         $current-value >= $baseline-grid-base {
+         // since we're moving towards smaller font sizes we will
+         // increment the line height (until the base size only)
+         $line-height: $line-height + $line-height-increment;
+
+         $previous-value: $current-value;
+
+         @if list.length($skipped-keys) > 0 {
+            $current-key: list.nth($skipped-keys, 1);
+            $skipped-keys: list.append($skipped-keys, #{$key});
+            $skipped-keys: list-remove($skipped-keys, 1);
+         } @else {
+            $current-key: $key;
+         }
+
+         $new-map: map.set(
+            $new-map,
+            #{$current-key},
+            $current-value
+         );
+      } @else {
+         // whenever we have a repeated value, we skip it and
+         // add that key to this list, to process them all later
+         $skipped-keys: list.append($skipped-keys, #{$key});
+      }
+   }
+
+   @if strip-unit($current-value) == 0 {
+      $current-value: $baseline-grid-base;
+   }
+
+   // process all skipped keys
+   @if list.length($skipped-keys) > 0 {
+      @each $key in $skipped-keys {
+
+         @if $current-value <= $baseline-grid-base {
+            $current-value: math.div($current-value, 2);
+
+            @if $current-value >= 1 {
+               $new-map: map.set(
+                  $new-map,
+                  #{$key},
+                  $current-value
+               );
+            }
+         } @else {
+            $current-value: $current-value - $baseline-grid-base;
+
+            $new-map: map.set(
+               $new-map,
+               #{$key},
+               $current-value
+            );
+         }
+      }
+
+      @return $new-map;
+   } @else {
+      @return $new-map;
+   }
+}
+
 /// Grid-scale function: retrieve a size from $baseline-grid-scale map
+/// @author vIGGS
 /// @param {String} $size - a key from $baseline-grid-scale map
 /// @return {Number} - value in rems
 /// @example - margin: gs(s, l);
-@function gs($sizes) {
+@function gs($map, $sizes) {
    $values: ();
 
    @each $size in $sizes {
-      @if map.has-key($baseline-grid-scale, $size) {
-         $value: map.get($baseline-grid-scale, $size);
+      @if map.has-key($map, $size) {
+         $value: map.get($map, $size);
          $values: list.append($values, to-rem($value), $separator: "space");
       } @else {
-         @error "gs() function: Map $baseline-grid-scale does not have the key #{$size} !!!";
+         @error "Grid-scale function: there is no such size: #{$size} !!!";
       }
    }
 
@@ -48,15 +201,153 @@ $baseline-grid-scale: (
 }
 
 /// Use this mixin in your code to get a proper size from
-/// $baseline-grid-scale map, from xxxxs to xxxxl
+/// $baseline-grid-scale map, from xxxxs to xxxxl.
+/// If and element has TOP/BOTTOM borders, it breaks the
+/// vertical rhythm, so use $border-compensation, to
+/// subtract that value from TOP/BOTTOM margin/padding.
+/// Lists are separated from one another with comma, and
+/// values are space separated.
+/// @author vIGGS
 /// @param {String} $property - css property
 /// @param {String | List} $sizes - key(s) from the $baseline-grid-scale
+/// @param {Number | List} $border-compensation - compensate TOP/BOTTOM margin/padding for borders
 /// @require {Function} gs - custom: get size
 /// @example
-///   @include gs(padding, xs xl);
+///   @include gs(margin, xs xl);
 ///   // will return, for example:
-///      padding: 0.5rem 1.5rem;
-@mixin gs($property, $values) {
-   $values: gs($values);
-   #{$property}: $values;
+///      margin: 0.5rem 1.5rem; // plus media queries if neccessary
+/// @example - with compensation
+///   @include gs(padding, xs xl xl, 2px, 1px 2px);
+@mixin gs(
+   $property,
+   $values,
+   $border-compensation-default: false,
+   $border-compensation-media-query: false
+) {
+   $default-values: gs($baseline-grid-scale-default, $values);
+   $media-query-values: false;
+   $compensation-default: false;
+   $compensation-media-query: false;
+
+   @if $border-compensation-default {
+      $top-value: false;
+      $bottom-value: false;
+      $top-subtract: false;
+      $bottom-subtract: false;
+
+      // ============================================
+      // IF THERE ARE DIFFERENT TOP AND BOTTOM VALUES
+      @if list.length($default-values) >= 3 {
+         // if compensation required
+         @if $border-compensation-default {
+            $top-subtract: to-rem(list.nth($border-compensation-default, 1));
+
+            // if different compensation for top and bottom required
+            @if list.length($border-compensation-default) >= 2 {
+               $bottom-subtract: to-rem(list.nth($border-compensation-default, 2));
+
+               $top-value: list.nth($default-values, 1) - $top-subtract;
+               $bottom-value: list.nth($default-values, 3) - $bottom-subtract;
+
+               // else same compensation for top and bottom
+            } @else {
+               $top-value: list.nth($default-values, 1) - $top-subtract;
+               $bottom-value: list.nth($default-values, 3) - $top-subtract;
+            }
+
+            // set new values
+            $default-values: list.set-nth($default-values, 1, $top-value);
+            $default-values: list.set-nth($default-values, 3, $bottom-value);
+         }
+
+         // =========================================
+         // SAME TOP AND BOTTOM VALUES
+      } @else {
+         // if compensation required
+         @if $border-compensation-default {
+            // set new value
+            $default-values: list.set-nth(
+               $default-values,
+               1,
+               list.nth($default-values, 1) - to-rem(list.nth($border-compensation-default, 1))
+            );
+         }
+      }
+   }
+
+   @if $baseline-grid-double-scale {
+      $media-query-values: gs($baseline-grid-scale-mobile, $values);
+
+      @if $border-compensation-media-query {
+         $top-value: false;
+         $bottom-value: false;
+         $top-subtract: false;
+         $bottom-subtract: false;
+
+         // ============================================
+         // IF THERE ARE DIFFERENT TOP AND BOTTOM VALUES
+         @if list.length($default-values) >= 3 {
+            // if compensation required
+            @if $border-compensation-media-query {
+               $top-subtract: to-rem(list.nth($border-compensation-media-query, 1));
+
+               // if different compensation for top and bottom required
+               @if list.length($border-compensation-media-query) >= 2 {
+                  $bottom-subtract: to-rem(list.nth($border-compensation-media-query, 2));
+
+                  $top-value: list.nth($media-query-values, 1) - $top-subtract;
+                  $bottom-value: list.nth($media-query-values, 3) - $bottom-subtract;
+
+                  // else same compensation for top and bottom
+               } @else {
+                  $top-value: list.nth($media-query-values, 1) - $top-subtract;
+                  $bottom-value: list.nth($media-query-values, 3) - $top-subtract;
+               }
+
+               // set new values
+               $media-query-values: list.set-nth($media-query-values, 1, $top-value);
+               $media-query-values: list.set-nth($media-query-values, 3, $bottom-value);
+            }
+
+            // =========================================
+            // SAME TOP AND BOTTOM VALUES
+         } @else {
+            // if compensation required
+            @if $border-compensation-media-query {
+               // set new value
+               $media-query-values: list.set-nth(
+                  $media-query-values,
+                  1,
+                  list.nth($media-query-values, 1) - to-rem(list.nth($border-compensation-media-query, 1))
+               );
+            }
+         }
+      }
+   }
+
+   @if $baseline-grid-approach == "mobile-first" {
+      @if $baseline-grid-double-scale {
+         #{$property}: $media-query-values;
+
+         // use emq to respect the design approach
+         // and media type
+         @include emq($baseline-grid-critical-breakpoint) {
+            #{$property}: $default-values;
+         }
+      } @else {
+         #{$property}: $default-values;
+      }
+   } @else if $baseline-grid-approach == "desktop-first" {
+      #{$property}: $default-values;
+
+      @if $baseline-grid-double-scale {
+         // use emq to respect the design approach
+         // and media type
+         @include emq($baseline-grid-critical-breakpoint) {
+            #{$property}: $media-query-values;
+         }
+      }
+   } @else {
+      @error "gs Mixin: design approach not supported: #{$baseline-grid-approach} !!!";
+   }
 }
