@@ -1,9 +1,10 @@
 // TYPE CHECKING
 
+@use "sass:math";
+
 /// A collection of function for advanced type checking
 /// @author Kitty Giraudel
 /// https://css-tricks.com/snippets/sass/advanced-type-checking/
-
 @function is-number($value) {
    @return type-of($value) == "number";
 }
@@ -62,8 +63,11 @@
    @return type-of($value) == "list";
 }
 
-// ----------------------------------------------------
+/// =======================================================
+/// =======================================================
+/// =======================================================
 /// @author vIGGS
+
 /// PX
 @function is-px($value) {
    @return is-number($value) and index("px", unit($value));
@@ -72,4 +76,17 @@
 /// REM
 @function is-rem($value) {
    @return is-number($value) and index("rem", unit($value));
+}
+
+/// if number is round
+@function is-round($number) {
+   @if type-of($number) == "number" {
+      @if math.round($number) == $number {
+         @return true;
+      } @else {
+         @return false;
+      }
+   } @else {
+      @error "is-round function: you must pass a number.";
+   }
 }
