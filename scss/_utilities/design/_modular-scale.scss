@@ -26,6 +26,11 @@
 ///  1:3     (3)      - major twelfth
 ///  1:4     (4)      - double octave
 
+/// required for the mixin,
+/// override with the config's main variable
+/// options: { "mobile-first" | "desktop-first" }
+$modular-scale-approach: "mobile-first" !default;
+
 /// this size is the base for the modular scale
 $modular-scale-base-font-size: 16px !default;
 
@@ -39,7 +44,7 @@ $modular-scale-critical-breakpoint: "m" !default;
 /// If you don't want that, you can set the "desktop ratio" smaller
 /// (better for mobile) and disable the "mobile ratio".
 /// @type Float | boolean - set false to disable
-$modular-scale-ratio-desktop: 1.3333 !default; // 3:4 / 1.333 / perfect fourth
+$modular-scale-ratio-default: 1.3333 !default; // 3:4 / 1.333 / perfect fourth
 $modular-scale-ratio-mobile: 1.25 !default; // 4:5 / 1.25 / major third
 
 $modular-scale: (
@@ -57,10 +62,13 @@ $modular-scale: (
 );
 
 /// Helper function: Get size based on a defined ratio
-/// @param {Integer} $scale - number to multiply/divide with the base
-/// @require {Integer} $size - base size in px for calculations
-/// @return {Number} - value in rems
-@function ms-scale($ratio, $scale) {
+/// Use this for debugging as well
+/// e.g. printing the modular scale size(s) in px
+/// @param {Integer} $ratio - modular scale ratio
+/// @param {Integer} $scale - scale from $modular-scale: multiply/divide with the base
+/// @require {Integer} $modular-scale-base-font-size - size in px for calculations
+/// @return {Number} - in px
+@function ms-scale-debug($ratio, $scale) {
    $base-size: $modular-scale-base-font-size;
 
    // final value to return
@@ -82,56 +90,32 @@ $modular-scale: (
       $size: math.round(math.div($base-size, $scale-by));
    }
 
+   @return $size;
+}
+
+/// Helper function: Get size in rems using ms-scale-debug
+@function ms-scale($ratio, $scale) {
+   $size: ms-scale-debug($ratio, $scale);
    @return to-rem($size);
 }
 
-///  *******************************************
-/// Created two different functions because
-/// if using them in code, it's easier to type
-/// msd(<size>); then ms(<ratio>, <size>); where
-/// <ratio> should be a (long) variable
-///  *******************************************
-
-/// Helper function: get a size from "$modular-scale" for "desktop" ratio
+/// Helper function: get a size from "$modular-scale"
 /// @param {String | List} $sizes - key(s) from the $modular-scale map
 /// @require {Module} map - built-in sass module
 /// @require {Module} list - built-in sass module
 /// @require {Function} ms-scale - custom: get size based on a ratio
 /// @require {Map} $modular-scale
 /// @return {Number | List} - value(s) in rems
-@function msd($sizes) {
+@function ms-scale-get($ratio, $sizes) {
    $values: ();
 
    @each $size in $sizes {
       @if map.has-key($modular-scale, $size) {
          $scale: map.get($modular-scale, $size);
-         $value: ms-scale($modular-scale-ratio-desktop, $scale);
+         $value: ms-scale($ratio, $scale);
          $values: list.append($values, $value);
       } @else {
          @error "msd() function: Map $modular-scale does not have the key #{$size} !!!";
-      }
-   }
-
-   @return $values;
-}
-
-/// Helper function: get a size from "$modular-scale" for "mobile" ratio
-/// @param {String | List} $sizes - key(s) from the $modular-scale map
-/// @require {Module} map - built-in sass module
-/// @require {Module} list - built-in sass module
-/// @require {Function} ms-scale - custom: get size based on a ratio
-/// @require {Map} $modular-scale
-/// @return {Number | List} - value(s) in rems
-@function msm($sizes) {
-   $values: ();
-
-   @each $size in $sizes {
-      @if map.has-key($modular-scale, $size) {
-         $scale: map.get($modular-scale, $size);
-         $value: ms-scale($modular-scale-ratio-mobile, $scale);
-         $values: list.append($values, $value, $separator: "space");
-      } @else {
-         @error "msm() function: Map $modular-scale does not have the key #{$size} !!!";
       }
    }
 
@@ -150,25 +134,42 @@ $modular-scale: (
 ///   // padding: 0.375rem 2.625rem;
 ///   // @media (max-width: 61.99em) { padding: 0.6875rem 1.4375rem; }
 @mixin ms($property, $values) {
-   $m-values: msm($values);
-   $d-values: msd($values);
-   @if $design-approach == "mobile-first" {
-      #{$property}: $m-values;
+   $mobile-values: "";
+   $default-values: "";
 
-      // use emq to respect the design approach
-      // and media type
-      @include emq($modular-scale-critical-breakpoint) {
-         #{$property}: $d-values;
+   @if $modular-scale-ratio-default {
+      $default-values: ms-scale-get($modular-scale-ratio-default, $values);
+   } @else {
+      @error "ms Mixin: No $modular-scale-ratio-default defined !!!";
+   }
+
+   @if $modular-scale-ratio-mobile {
+      $mobile-values: ms-scale-get($modular-scale-ratio-mobile, $values);
+   }
+
+   @if $modular-scale-approach == "mobile-first" {
+      @if $modular-scale-ratio-mobile {
+         #{$property}: $mobile-values;
+
+         // use emq to respect the design approach
+         // and media type
+         @include emq($modular-scale-critical-breakpoint) {
+            #{$property}: $default-values;
+         }
+      } @else {
+         #{$property}: $default-values;
       }
-   } @else if $design-approach == "desktop-first" {
-      #{$property}: $d-values;
+   } @else if $modular-scale-approach == "desktop-first" {
+      #{$property}: $default-values;
 
-      // use emq to respect the design approach
-      // and media type
-      @include emq($modular-scale-critical-breakpoint) {
-         #{$property}: $m-values;
+      @if $modular-scale-ratio-mobile {
+         // use emq to respect the design approach
+         // and media type
+         @include emq($modular-scale-critical-breakpoint) {
+            #{$property}: $mobile-values;
+         }
       }
    } @else {
-      @error "ms Mixin: design approach not supported: #{$design-approach} !!!";
+      @error "ms Mixin: design approach not supported: #{$modular-scale-approach} !!!";
    }
 }
