@@ -1,97 +1,70 @@
-/// @author vIGGS
 /// @link https://github.com/v1ggs/scss-starter
-
-// use on "img" tag
-// name the selector whatever you want
 
 /// balancing images
 /// set false to remove
+/// Use:
+/// @link https://yoksel.github.io/svg-gradient-map/#/
+/// @link https://yoksel.github.io/svg-filters/#/
+/// @link https://codepen.io/stoumann/pen/MWeNmyb
+/// @link https://www.cssfiltergenerator.com/
 $image-balance-filter: grayscale(40%) saturate(70%) brightness(90%) !default;
 $image-balance-filter-hover: grayscale(0%) saturate(100%) brightness(100%) !default;
 
-/// overlay, image's parent element
-/// color or gradient
-/// set false to remove
-$image-balance-overlay: radial-gradient($color-primary-50 70%, $color-primary-80 100%) !default;
-$image-balance-overlay-opacity: 0.2 !default;
-
-/// style broken images { Boolean }
-/// Unsupported on: Opera Mini, Safari (Desktop and iOS), iOS Webview (Chrome, Firefox, others)
-/// @link https://bitsofco.de/styling-broken-images/
-$image-style-broken: true !default;
-
-@mixin img(
-   $fluid: true,
-   $balance: true
-) {
+@mixin img() {
+   // ========================= IMAGE CONTAINER
+   // Idea from: https://app.ft.com/
    @include box-sizing;
-   vertical-align: middle;
+   position: relative;
+   height: 0;
 
-   // From Bootstrap:
-   // This is purposefully opt-in via an explicit class rather than being the default for all `<img>`s.
-   // We previously tried the "images are responsive by default" approach in Bootstrap v2,
-   // and abandoned it in Bootstrap v3 because it breaks lots of third-party widgets (including Google Maps)
-   // which weren't expecting the images within themselves to be involuntarily resized.
-   // See also https://github.com/twbs/bootstrap/issues/18178
-   @if $fluid {
-      max-width: 100%;
-      height: auto;
-   }
+   // placeholder
+   background: url($url-assets + "/img/common/placeholder.svg") center / cover;
+   padding-bottom: 56.25%;
+   z-index: 1;
 
-   @if $balance {
-      filter: $image-balance-filter;
+   // ========================= IMAGE
+   &__img {
+      // ******************************************************
+      // A reminder:
+      // From Bootstrap:
+      // This is purposefully opt-in via an explicit class rather than being the default for all `<img>`s.
+      // We previously tried the "images are responsive by default" approach in Bootstrap v2,
+      // and abandoned it in Bootstrap v3 because it breaks lots of third-party widgets (including Google Maps)
+      // which weren't expecting the images within themselves to be involuntarily resized.
+      // See also https://github.com/twbs/bootstrap/issues/18178
+      // *** max-width: 100%;
+      // *** height: auto;
+      // *** vertical-align: middle;
+      // ******************************************************
 
-      &:hover {
-         filter: $image-balance-filter-hover;
-      }
-   }
+      // From: https://app.ft.com/
+      @include box-sizing;
+      display: block;
+      margin: 0;
+      padding: 0;
+      border: 0;
+      width: 100%;
+      -webkit-user-drag: none;
+      opacity: 1;
+      transition: opacity 0.2s linear; // TODO: use config for transition duration | Sun 03 Jul 2022, 18:46
 
-   /// Unsupported on: Opera Mini, Safari (Desktop and iOS), iOS Webview (Chrome, Firefox, others)
-   /// @link https://bitsofco.de/styling-broken-images/
-   @if $image-style-broken {
-      // display: block;
-      // position: relative;
+      @if $image-balance-filter {
+         filter: $image-balance-filter;
 
-      &::before {
-         opacity: 0.8;
-         display: block;
-         margin-bottom: 1rem;
-         content: "We're sorry, this image failed to load: '" attr(alt) "'.";
-      }
-
-      &::after {
-         opacity: 0.8;
-         display: block;
-
-         /// url encoded icon from:
-         /// @link https://www.svgrepo.com/svg/11140/picture
-         /// license CC0
-         /// @link https://www.svgrepo.com/page/licensing
-         content: url("data:image/svg+xml,%3C%3Fxml version='1.0' encoding='iso-8859-1'%3F%3E%3Csvg version='1.1' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 350 350' xmlns:xlink='http://www.w3.org/1999/xlink' enable-background='new 0 0 350 350'%3E%3Cpath d='M5,350h340V0H5V350z M25,330v-62.212h300V330H25z M179.509,247.494H60.491L120,171.253L179.509,247.494z M176.443,211.061l33.683-32.323l74.654,69.05h-79.67L176.443,211.061z M325,96.574c-6.384,2.269-13.085,3.426-20,3.426 c-33.084,0-60-26.916-60-60c0-6.911,1.156-13.612,3.422-20H325V96.574z M25,20h202.516C225.845,26.479,225,33.166,225,40 c0,44.112,35.888,80,80,80c6.837,0,13.523-0.846,20-2.518v130.306h-10.767l-104.359-96.526l-45.801,43.951L120,138.748 l-85.109,109.04H25V20z' /%3E%3C/svg%3E") " " attr(src);
-      }
-   }
-}
-
-// image parent element
-@mixin img-overlay($pseudo-element: before) {
-   // gives option to use it across design
-   // and then turn it on/off in config
-   @if $image-balance-overlay {
-      $position: relative;
-
-      &--img-overlay::#{$pseudo-element} {
-         $position: absolute;
-         $content: "";
-         $top: 0;
-         $right: 0;
-         $bottom: 0;
-         $left: 0;
-         background-image: $image-balance-overlay;
-         opacity: $image-balance-overlay-opacity;
-
-         &:hover {
-            opacity: 0;
+         &:hover,
+         &:focus {
+            filter: $image-balance-filter-hover;
          }
+      }
+
+      /// style broken images
+      /// Unsupported on: Opera Mini, Safari (Desktop and iOS), iOS Webview (Chrome, Firefox, others)
+      /// use js to apply default replacement image on error
+      /// firefox displays alt attribute in the ::before pseudoelement
+      /// @link https://bitsofco.de/styling-broken-images/
+      &::after {
+         display: block;
+         content: "\1f304" " This image failed to load";
       }
    }
 }
