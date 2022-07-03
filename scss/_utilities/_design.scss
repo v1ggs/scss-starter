@@ -1,11 +1,10 @@
 // ====================================================
 // ================================= UTILITIES / DESIGN
 // IMPORT AFTER CONFIG
-@import "_utilities/design/to-rem";
+@import "_utilities/design/box-sizing";
 @import "_utilities/design/a";
 @import "_utilities/design/baseline-grid";
 @import "_utilities/design/block";
-@import "_utilities/design/body";
 @import "_utilities/design/center";
 @import "_utilities/design/emq";
 @import "_utilities/design/fluid-size";
@@ -17,10 +16,11 @@
 @import "_utilities/design/ol";
 @import "_utilities/design/p";
 @import "_utilities/design/pseudo";
-@import "_utilities/design/reduced-motion";
-@import "_utilities/design/root";
-@import "_utilities/design/selection";
 @import "_utilities/design/system-font-family";
 @import "_utilities/design/sr-only";
+@import "_utilities/design/to-rem";
 @import "_utilities/design/ul";
 @import "_utilities/design/vr";
+
+/// Base styles: html, body, target, selection...
+@import "_utilities/design/base";
