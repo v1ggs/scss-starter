@@ -7,6 +7,7 @@
 /// Don't forget to remove it in production...
 /// **************************************************
 @charset "UTF-8";
+@use "sass:map";
 
 // ====================================================
 // ============================================= CONFIG
@@ -41,53 +42,80 @@
    /* - */
    white: $color-white;
    black: $color-black;
+   /* - */
+   color-info: $color-info;
+   color-success: $color-success;
+   color-warning: $color-warning;
+   color-error: $color-error;
    /* stylelint-enable property-no-unknown */
 }
 
-.modular-scale {
-   @include ms(padding, xxxs m xxxxl);
-   @include ms(border-radius, xxs m l xxl);
-}
+$baseline-grid-scale-default: ();
+$baseline-grid-scale-mobile: ();
+$baseline-grid-scale-default: auto-grid($modular-scale-ratio-default);
+$baseline-grid-scale-mobile: auto-grid($modular-scale-ratio-mobile);
 
-.grid-scale {
-   @include gs(padding, xs xl);
-}
+.modular-scale-desktop {
+   /* stylelint-disable property-no-unknown */
+   ratio: $modular-scale-ratio-default;
 
-.emq {
-   @include emq(min-xxs) {
-      color: #fff;
+   @each $key, $value in $modular-scale {
+      #{$key}: ms-scale-debug($modular-scale-ratio-default, $value);
    }
-
-   @include emq(xxs, ol, op, touch, hi-res, retina, min-h-768, "(test: test)", xxl) {
-      color: #fff;
-   }
+   /* stylelint-enable property-no-unknown */
 }
 
-.fluid-size {
-   @include fs(
-      margin-bottom,
-      100,
-      0.5rem,
-      1920px,
-      xxs);
+.grid-scale-desktop {
+   /* stylelint-disable property-no-unknown */
+   multiplier: $baseline-grid-line-height;
 
-   @include no-js-style {
-      @include fs(
-         margin,
-         3rem,
-         1rem,
-         xxl,
-         xxs);
+   @each $key, $value in $baseline-grid-scale-default {
+      #{$key}: $value;
    }
+   /* stylelint-enable property-no-unknown */
 }
 
-.font-family {
-   @include ff("Custom sans-serif", sans-serif);
-   @include ff("Custom serif", serif);
-   @include ff("Custom monospace", monospace);
-   @include ff("Custom cursive", cursive);
-   @include ff("Custom fantasy", fantasy);
-   @include a;
-   @include img($fluid: true, $balance: true);
-   @include img-overlay(before);
+.modular-scale-mobile {
+   /* stylelint-disable property-no-unknown */
+   ratio: $modular-scale-ratio-mobile;
+
+   @each $key, $value in $modular-scale {
+      #{$key}: ms-scale-debug($modular-scale-ratio-mobile, $value);
+   }
+   /* stylelint-enable property-no-unknown */
+}
+
+.grid-scale-mobile {
+   /* stylelint-disable property-no-unknown */
+   multiplier: $baseline-grid-line-height;
+
+   @each $key, $value in $baseline-grid-scale-mobile {
+      #{$key}: $value;
+   }
+   /* stylelint-enable property-no-unknown */
+}
+
+.test-gs {
+   /* stylelint-disable property-no-unknown */
+   xxxxl: 64px;
+   xxxl: 52px;
+   xxl: 40px;
+   xl: 36px;
+   l: 28px;
+   m: 24px;
+   s: 20px;
+   xs: 16px;
+   xxs: 12px;
+   xxxs: 8px;
+   xxxxs: 4px;
+   /* 1 */
+   @include gs(margin, xl, 1, 2);
+   /* 2 */
+   @include gs(margin, xl, 1 2, 2 3);
+   /* 3 */
+   @include gs(margin, xl xs xs, 1, 2);
+   /* 4 */
+   @include gs(margin, xl xs xs, 1 2, 2 3);
+   /* 5 */
+   @include gs(margin, xl xs xs xl, 1 2, 2 3);
 }
