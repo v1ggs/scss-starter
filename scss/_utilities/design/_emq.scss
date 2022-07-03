@@ -93,7 +93,7 @@ $emq-breakpoints: (
 $emq-features: (
    op: "(orientation: portrait)",
    ol: "(orientation: landscape)",
-   rm-no-pref: "(prefers-reduced-motion: no-preference)",
+   no-reduced-motion: "(prefers-reduced-motion: no-preference)",
    dark-scheme: "(prefers-color-scheme: dark)",
    touch: "(pointer: coarse)", // (hover: none) is unreliable
    hi-res: "(-webkit-min-device-pixel-ratio: 1.5), (min-resolution: 144dpi)",
@@ -163,8 +163,14 @@ $emq-show-breakpoints-position: bottom left !default;
    @if $args-length > 0 {
       @for $i from 1 through $args-length {
          $current-query: list.nth($args, $i);
-         $is-forced-min-bp: string.index($current-query, "min-");
-         $is-forced-max-bp: string.index($current-query, "max-");
+         $is-forced-min-bp: false;
+         $is-forced-max-bp: false;
+
+         @if type-of($current-query) != "number" {
+            $is-forced-min-bp: string.index($current-query, "min-");
+            $is-forced-max-bp: string.index($current-query, "max-");
+         }
+
          @if $is-forced-min-bp or $is-forced-max-bp {
             // prevent assigning some custom queries that start
             // with "min-" or "max-" using map.has-key()
@@ -172,7 +178,9 @@ $emq-show-breakpoints-position: bottom left !default;
             $current-query-short-in-bp-map: map.has-key($emq-breakpoints, $current-query-short);
          }
 
-         @if $is-forced-min-bp and $current-query-short-in-bp-map {
+         @if type-of($current-query) == "number" {
+            $bp-1: $current-query;
+         } @else if $is-forced-min-bp and $current-query-short-in-bp-map {
             $bp-1: $current-query-short;
          } @else if $is-forced-max-bp and $current-query-short-in-bp-map {
             $bp-2: $current-query-short;
@@ -259,6 +267,9 @@ $emq-show-breakpoints-position: bottom left !default;
 @mixin emq($args...) {
    // get values in a map
    $map: emq-get($args...);
+
+   // don't remove these and insert directly
+   // in @include mq(...), won't work
    $from: map.get($map, from);
    $until: map.get($map, until);
    $and: map.get($map, and);
