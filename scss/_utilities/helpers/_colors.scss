@@ -162,3 +162,13 @@
 
    @return $new-color;
 }
+
+/// Main function: mix two colors
+/// @require {Module} color - built-in sass module
+/// @param {Color} $color1 - color to return
+/// @param {Color} $color2 - color to mix with $color1
+/// @param {Percent} $percentage - $color2 < 50% < $color1 (default 50%)
+/// @return {Color} - color mix
+@function mix-colors($color1: null, $color2: null, $percent: 50%) {
+   @return color.mix($color1, $color2, $percent);
+}
