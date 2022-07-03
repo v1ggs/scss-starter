@@ -11,7 +11,7 @@
 /// ========================================================== GENERAL SETTINGS
 
 /// options: { "mobile-first" | "desktop-first" }
-$design-approach: "desktop-first" !default;
+$design-approach: "mobile-first" !default;
 
 /// breakpoint where the complete design changes from one
 /// view (e.g. mobile view) to another (e.g. desktop view)
@@ -27,19 +27,11 @@ $view-switch-breakpoint: "m" !default;
 /// rems get rounded (6.6666 > 6.667) and that breaks the baseline grid.
 $base-font-size: 16px !default;
 
-// if you want to use a universal selector (*) to set for all
-// "box-sizing:border-box;", then you should disable this
+// If you want to use a universal selector (*) to set
+// "box-sizing:border-box;" for all, then disable this.
+// If you use BEM, each component should be complete,
+// i.e. contain "its own" box-sizing, then enable this.
 $use-box-sizing: true !default;
-
-/// limit page width (in px, will be converted to rems)
-/// @type lenght | false
-/// this will not limit the body tag, but its first
-/// child - "inner" container element (body__inner)
-$page-max-width: 992px !default;
-
-/// html overflow
-$html-overflow-x: hidden !default;
-$html-overflow-y: auto !default;
 
 /// smooth scroll - will be smooth only when
 /// a visitor does not prefer reduced motion
@@ -48,9 +40,8 @@ $smooth-scroll: true !default;
 // use these to for linking to assets in css, relative to the site root
 // for example: "background-image: url($url-img + "/image.jpg");
 // you need a web server for these to work during the development
-$design-dir: "/wp-content/themes/theme-name" !default;
-$url-img: $design-dir + "/assets/img" !default;
-$url-icons: $design-dir + "/assets/icons" !default;
+$design-dir: "/public_html" !default;
+$url-assets: $design-dir + "/assets" !default;
 
 /// ===========================================================================
 /// ============================================================= MEDIA QUERIES
@@ -85,12 +76,8 @@ $emq-breakpoints: (
 $emq-features: (
    op: "(orientation: portrait)",
    ol: "(orientation: landscape)",
-   rm-no-pref: "(prefers-reduced-motion: no-preference)",
-   dark-scheme: "(prefers-color-scheme: dark)",
+   no-reduced-motion: "(prefers-reduced-motion: no-preference)",
    touch: "(pointer: coarse)", // (hover: none) is unreliable
-   hi-res: "(-webkit-min-device-pixel-ratio: 1.5), (min-resolution: 144dpi)",
-   retina: "(-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi)",
-   min-h-768: "(min-height: 768px)", // query height example
 ) !default;
 
 /// Set the @media type { screen | print | all } (default "all")
@@ -122,6 +109,11 @@ $emq-media-type: all !default;
 ///  1:3     (3)      - major twelfth
 ///  1:4     (4)      - double octave
 
+/// required for the mixin,
+/// override with the config's main variable
+/// options: { "mobile-first" | "desktop-first" }
+$modular-scale-approach: $design-approach !default;
+
 /// this size is the base for the modular scale
 $modular-scale-base-font-size: $base-font-size !default;
 
@@ -135,31 +127,54 @@ $modular-scale-critical-breakpoint: $view-switch-breakpoint !default;
 /// If you don't want that, you can set the "desktop ratio" smaller
 /// (better for mobile) and disable the "mobile ratio".
 /// @type Float | boolean - set false to disable
-$modular-scale-ratio-desktop: 1.618 !default;
-$modular-scale-ratio-mobile: 1.2 !default;
+$modular-scale-ratio-default: 1.618 !default;
+$modular-scale-ratio-mobile: 1.25 !default;
 
 /// ===========================================================================
 /// ============================================================= BASELINE GRID
 /// @see "_utilities/design/baseline-grid";
 
+/// required for the mixin,
+/// override with the config's main variable
+/// options: { "mobile-first" | "desktop-first" }
+$baseline-grid-approach: $design-approach !default;
+
+/// baseline grid base (if you use it, everything
+/// on page should fit into this grid)
+$baseline-grid-base: 8px !default;
+
+// line height for display text
+// it will be programmatically encreased for smaller fonts
+$baseline-grid-line-height: 1.3 !default;
+
+// line height gets larger for smaller font-sizes
+// this controls how fast it grows, from 0 - no upper limit
+$baseline-grid-line-height-increment-strenght: 2 !default;
+
+/// Used if you combine it with modular scale
+/// and use two ratios, one for desktop, one for mobile
+/// this is a breakpoint where you start using
+/// another "grid scale"
+/// USE A KEY FROM YOUR BREAKPOINTS MAP
+$baseline-grid-critical-breakpoint: $view-switch-breakpoint !default;
+
+/// wether or not you use two modular scale ratios
+/// It has the value of $modular-scale-ratio-mobile,
+/// but the point is just to check if it's true or false
+$baseline-grid-double-scale: $modular-scale-ratio-mobile !default;
+
 /// Use "gs" mixin in your code to get a proper size from
-/// $baseline-grid-scale map, from xxxxs to xxxxl
-/// you can combine it with modular scale, which can be used for
-/// font-size, and the baseline grid for line heights and spacing
-/// modify $baseline-grid-scale map to fit your needs
-$baseline-grid-scale: (
-   xxxxl: 60px,
-   xxxl: 48px,
-   xxl: 32px,
-   xl: 24px,
-   l: 20px,
-   m: 16px, // default
-   s: 12px,
-   xs: 8px,
-   xxs: 4px,
-   xxxs: 2px,
-   xxxxs: 1px,
-) !default;
+/// $baseline-grid-scale-default map, from xxxxs to xxxxl.
+/// It can be combined with modular scale, which can
+/// be used for font-size, and the baseline grid for
+/// line heights and spacings. Set it manually or use
+/// auto-grid() function, if you use modular scale.
+$baseline-grid-scale-default: auto-grid($modular-scale-ratio-default) !default;
+
+// Use only if you combine it with modular scale and use two
+// ratios, one for desktop, one for mobile. Set it manually
+// or use auto-grid() function, if you use modular scale.
+$baseline-grid-scale-mobile: auto-grid($modular-scale-ratio-mobile) !default;
 
 /// ===========================================================================
 /// ================================================================ FLUID SIZE
@@ -171,11 +186,11 @@ $baseline-grid-scale: (
 $enable-fluid-size: true !default;
 
 // base value to use for px to rem conversion
-// assign the project's "base font size" variable
+// assign the config's main "base font size" variable
 $fluid-size-base: $base-font-size !default;
 
 // breakpoints map
-// override with the project's "breakpoints" map
+// override with the config's main "breakpoints" map
 /// @type map
 $fluid-size-breakpoints: $emq-breakpoints !default;
 
@@ -189,6 +204,7 @@ $fluid-size-breakpoints: $emq-breakpoints !default;
 /// @type list - available: "calc-mq", "calc", "min-max", "clamp"
 /// @example
 ///   $fluid-size-methods: "calc", "clamp";
+/// @example
 ///   $fluid-size-methods: "min-max";
 $fluid-size-methods: "calc-mq" !default;
 
@@ -207,12 +223,9 @@ $fluid-size-use-safari-fix: true !default;
 /// Don't use base color (e.g. $color-primary-base) in your code,
 /// use $color-primary-50 instead
 
-/// BRAND COLORS
-$color-brand-primary: #206030 !default;
-
 /// THEME COLORS
 /// primary color / tints / shades
-$color-primary-base: $color-brand-primary !default; // don't use in code
+$color-primary-base: #1f2a3f !default; // don't use in code
 $color-primary-20: color($color-primary-base, 20%) !default;
 $color-primary-30: color($color-primary-base, 30%) !default;
 $color-primary-50: color($color-primary-base, 50%) !default; // default
@@ -220,7 +233,7 @@ $color-primary-70: color($color-primary-base, 70%) !default;
 $color-primary-80: color($color-primary-base, 80%) !default;
 
 /// secondary color / tints / shades
-$color-secondary-base: #38281d !default; // don't use in code
+$color-secondary-base: neutral(82%, $color-primary-base) !default; // don't use in code
 $color-secondary-20: color($color-secondary-base, 20%) !default;
 $color-secondary-30: color($color-secondary-base, 30%) !default;
 $color-secondary-50: color($color-secondary-base, 50%) !default; // default
@@ -228,7 +241,7 @@ $color-secondary-70: color($color-secondary-base, 70%) !default;
 $color-secondary-80: color($color-secondary-base, 80%) !default;
 
 /// accent color / tints / shades
-$color-accent-base: #857930 !default; // don't use in code
+$color-accent-base: #4d422e !default; // don't use in code
 $color-accent-20: color($color-accent-base, 20%) !default;
 $color-accent-30: color($color-accent-base, 30%) !default;
 $color-accent-50: color($color-accent-base, 50%) !default; // default
@@ -247,10 +260,10 @@ $color-white: $color-neutral-05 !default;
 $color-black: $color-neutral-95 !default;
 
 /// FEEDBACK COLORS
-$color-info: #5757f3 !default;
-$color-warning: #ce8704 !default;
-$color-success: #4faf4f !default;
-$color-error: #d62222 !default;
+$color-info: mix-colors(#0000ff, $color-primary-base, 26%) !default;
+$color-success: mix-colors(#00ff00, $color-primary-base, 26%) !default;
+$color-warning: mix-colors(#ff8000, $color-primary-base, 26%) !default;
+$color-error: mix-colors(#ff0000, $color-primary-base, 26%) !default;
 
 /// ===========================================================================
 /// ================================================================ TYPOGRAPHY
@@ -260,28 +273,21 @@ $font-family-primary: "Primary Font Family", "Optional Fallback Family", sans-se
 $font-family-primary-bold: "Primary Font Family Bold", "Optional Fallback Family", sans-serif !default;
 $font-family-secondary: "Secondary Font Family", "Optional Fallback Family", serif !default;
 
-$font-size-s: ms(s) !default;
-$font-size-m: ms(m) !default;
-$font-size-l: ms(l) !default;
+/// Set font sizes and line heights in the code,
+/// because only the mixin can be used...
 
 /// ===========================================================================
 /// ==================================================================== IMAGES
 
 /// balancing images
 /// set false to remove
+/// Use:
+/// @link https://yoksel.github.io/svg-gradient-map/#/
+/// @link https://yoksel.github.io/svg-filters/#/
+/// @link https://codepen.io/stoumann/pen/MWeNmyb
+/// @link https://www.cssfiltergenerator.com/
 $image-balance-filter: grayscale(40%) saturate(70%) brightness(90%) !default;
 $image-balance-filter-hover: grayscale(0%) saturate(100%) brightness(100%) !default;
-
-/// overlay, image's parent element
-/// color or gradient
-/// set false to remove
-$image-balance-overlay: radial-gradient($color-primary-50 70%, $color-primary-80 100%) !default;
-$image-balance-overlay-opacity: 0.2 !default;
-
-/// style broken images { Boolean }
-/// Unsupported on: Opera Mini, Safari (Desktop and iOS), iOS Webview (Chrome, Firefox, others)
-/// @link https://bitsofco.de/styling-broken-images/
-$image-style-broken: true !default;
 
 /// ===========================================================================
 /// =============================================================== TRANSITIONS
@@ -291,6 +297,11 @@ $transition-duration-005: 0.5s !default;
 $transition-duration-01: 1s !default;
 $transition-duration-10: 10s !default;
 
+/// Use:
+/// @link https://cubic-bezier.com/
+$transition-timing-function-default: ease-out !default;
+$transition-timing-function-default-cb: cubic-bezier(0.81, 0.09, 0.77, 0.97) !default;
+
 /// ===========================================================================
 /// =================================================================== SHADOWS
 /// box-shadow:
@@ -298,28 +309,13 @@ $transition-duration-10: 10s !default;
 /// inset | offset-x | offset-y | color
 /// possible any number of shadows, separated by commas
 
-$text-shadow-primary-01: 0 0 1px $color-primary-80 !default;
-$text-shadow-primary-04: 0 0 4px $color-primary-80 !default;
-$text-shadow-primary-08: 0 0 8px $color-primary-80 !default;
+$text-shadow-01: 0 0 1px $color-neutral-80 !default;
+$text-shadow-04: 0 0 4px $color-neutral-80 !default;
+$text-shadow-08: 0 0 8px $color-neutral-80 !default;
 
-$text-shadow-secondary-01: 0 0 1px $color-neutral-80 !default;
-$text-shadow-secondary-04: 0 0 4px $color-neutral-80 !default;
-$text-shadow-secondary-08: 0 0 8px $color-neutral-80 !default;
-
-$box-shadow-primary-01-00: 0 0 1px 0 $color-primary-80 !default;
-$box-shadow-primary-04-00: 0 0 4px 0 $color-primary-80 !default;
-$box-shadow-primary-08-00-5: 0 0 8px -5px $color-primary-80 !default;
-
-$box-shadow-secondary-01-00: 0 0 1px 0 $color-neutral-80 !default;
-$box-shadow-secondary-04-00: 0 0 4px 0 $color-neutral-80 !default;
-$box-shadow-secondary-08-05: 0 0 8px 5px $color-neutral-80 !default;
-
-/// ===========================================================================
-/// ============================================================= BORDER RADIUS
-
-$bor-rad-08: 8px !default;
-$bor-rad-05: 5px !default;
-$bor-rad-02: 2px !default;
+$box-shadow-01-00: 0 0 1px 0 $color-neutral-80 !default;
+$box-shadow-04-00: 0 0 4px 0 $color-neutral-80 !default;
+$box-shadow-08-00-5: 0 0 8px -5px $color-neutral-80 !default;
 
 /// ===========================================================================
 /// =================================================================== Z-INDEX
@@ -382,24 +378,9 @@ $emq-show-breakpoints: (xxl, xl, l, m, s, xs, xxs) !default;
 /// both properties required
 $emq-show-breakpoints-position: bottom left !default;
 
-// Pesticide sets a pair of debug variables at the top of the partial,
-// which you can set to false if you want to turn off outlines and
-// depths (i.e., shadows) respectively:
-$pesticide-debug-outline: true !default;
-$pesticide-debug-depth: true !default;
-
-/// display the baseline grid on the page
-/// for development, remove before publishing
-/// @requires $baseline-grid-base
-$use-basehold-it: false !default;
-
-/// baseline grid base (if you use it, everything
-/// on page should fit into this grid)
-$baseline-grid-base: 4px !default; // for basehold.it
-
 /// ===========================================================================
 /// ===========================================================================
-/// =============================== COMPONENTS ================================
+/// ================================== DESIGN =================================
 /// ===========================================================================
 /// ===========================================================================
 /// From bootstrap:
@@ -411,30 +392,50 @@ $baseline-grid-base: 4px !default; // for basehold.it
 ///    $modal-content-box-shadow-xs
 /// ===========================================================================
 /// ===========================================================================
-/// ==================================================
-/// ================================ CUSTOM PROPERTIES
-/// list all css variables here, WITHOUT leading "--"
-$custom-properties: (
-   name: value,
+// Base configuration: set anything to false to remove it,
+// don't delete top-level keys (html, body, body-inner...).
+// If using comma-separated list (like font-family)
+// put it in parentheses.
+$base-config: (
+   // Html tag settings
+   html: (
+      overflow-x: hidden,
+      overflow-y: false,
+   ),
+   body: (
+      // don't use "page" class if you work with wordpress,
+      // it sets class "page" for pages - REQUIRED !!!
+      class-name: body,
+      background-color: $color-secondary-50,
+      font-size: 1rem,
+      font-family: $font-family-primary,
+      font-weight: 400,
+      line-height: 1.5,
+      color: $color-black,
+      text-rendering: optimizelegibility,
+   ),
+   body-inner: (
+      // __bem style suffix: REQUIRED !!!
+      class-suffix: inner,
+      width: 100%,
+      max-width: 992px,
+      margin: 0 auto,
+      background-color: $color-primary-50,
+   ),
+   // ::selection and :target
+   // Allowable properties (::selection): background-color,
+   // color, text-decoration, text-shadow, stroke-color,
+   // fill-color, stroke-width
+   text-selection: (
+      color: $color-primary-20,
+      background-color: $color-accent-80,
+   ),
+   // Css variables: list them
+   // here WITHOUT leading "--"
+   custom-properties: (
+      property: false,
+   ),
 ) !default;
-
-/// ==================================================
-/// ========================================== GENERAL
-// style text selection (mind wcag contrast)
-$text-selection-foreground: $color-primary-20 !default;
-$text-selection-background: $color-accent-80 !default;
-
-/// ==================================================
-/// ============================================= BODY
-// Set base font-size and line-height to maintain
-// the vertical rhythm, and override when neccessary
-$body-background-image: $color-primary-20 !default;
-$body-font-size: 1rem !default;
-$body-font-family: $font-family-primary !default;
-$body-font-weight: 400 !default;
-$body-line-height: 1.5 !default;
-$body-text-color: $color-black !default;
-$body-text-rendering: false !default;
 
 /// ==================================================
 /// ============================================ LINKS
